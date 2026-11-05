@@ -26,7 +26,7 @@ def register(mcp: FastMCP) -> None:
         agency: Annotated[str, "The agency abbreviation, such as GSA or HHS."] = "GSA",
     ) -> dict:
         """
-        This tool reads GSA projects from a configured Databricks table.
+        This tool reads projects for a selected agency from a configured Databricks table.
         It returns agency, name, description, repository URL, and languages.
         Results are ordered by project name.
         The limit accepts 1–100 and defaults to 10.
