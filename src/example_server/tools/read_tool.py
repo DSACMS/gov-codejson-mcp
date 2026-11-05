@@ -26,11 +26,13 @@ def register(mcp: FastMCP) -> None:
         agency: Annotated[str, "The agency abbreviation, such as GSA or HHS."] = "GSA",
     ) -> dict:
         """
-        This tool reads projects for a selected agency from a configured Databricks table.
+        This tool reads projects for a selected agency
+        from a configured Databricks table.
         It returns agency, name, description, repository URL, and languages.
         Results are ordered by project name.
         The limit accepts 1–100 and defaults to 10.
         The agency parameter filters results by the specified agency.
+        Languages is null for SSA because its current source structure lacks that field.
         """
         if not 1 <= limit <= 100:
             raise ValueError("limit must be between 1 and 100")
@@ -43,6 +45,10 @@ def register(mcp: FastMCP) -> None:
             raise ValueError("agency must match a supported agency abbreviation")
 
         agency_column = quote_identifier(agency)
+        if agency == "SSA":
+            languages_expression = "NULL"
+        else:
+            languages_expression = "projects.project.languages"
         table_name = ".".join(
             quote_identifier(os.environ[key])
             for key in (
@@ -63,7 +69,7 @@ def register(mcp: FastMCP) -> None:
                         projects.project.name AS name,
                         projects.project.description AS description,
                         projects.project.repositoryURL AS repository_url,
-                        projects.project.languages AS languages
+                        {languages_expression} AS languages
                     FROM {table_name} AS raw,
                     LATERAL explode(raw.{agency_column}.releases) AS projects(project)
                     ORDER BY name
