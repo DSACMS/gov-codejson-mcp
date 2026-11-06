@@ -1,0 +1,23 @@
+command:
+  - /bin/sh
+  - -c
+  - "PYTHONPATH=src python -m example_server.app"
+
+env:
+  - name: DATABRICKS_READER_AUTH_MODE
+    value: "app"
+
+  - name: DATABRICKS_SERVER_HOSTNAME
+    value: "dbc-aae0ba16-8727.cloud.databricks.com"
+
+  - name: DATABRICKS_HTTP_PATH
+    value: "/sql/1.0/warehouses/50d2bd4ddf65e0f5"
+
+  - name: DATABRICKS_CATALOG
+    value: "users"
+
+  - name: DATABRICKS_SCHEMA
+    value: "natalia_luzuriaga1"
+
+  - name: DATABRICKS_TABLE
+    value: "gov_code_raw"
