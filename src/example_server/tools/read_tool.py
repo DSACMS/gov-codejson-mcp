@@ -1,0 +1,106 @@
+import os
+from typing import Annotated
+
+from databricks import sql
+from databricks.sdk.core import Config, oauth_service_principal
+from fastmcp import FastMCP
+
+
+def quote_identifier(identifier: str) -> str:
+    """Escape and quote one SQL identifier."""
+    escaped_identifier = identifier.replace("`", "``")
+    return "`" + escaped_identifier + "`"
+
+def app_credentials_provider():
+    """Provide OAuth credentials for the deployed App."""
+    config = Config(
+        host="https://" + os.environ["DATABRICKS_SERVER_HOSTNAME"],
+        client_id=os.environ["DATABRICKS_CLIENT_ID"],
+        client_secret=os.environ["DATABRICKS_CLIENT_SECRET"],
+    )
+    return oauth_service_principal(config)
+
+def register(mcp: FastMCP) -> None:
+    @mcp.tool(
+        name="databricks_preview_table",
+        annotations={
+            "title": "Preview Databricks Table",
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "idempotentHint": True,
+            "openWorldHint": True,
+        },
+    )
+    def preview_table(
+        limit: Annotated[int, "The maximum number of rows to return."] = 10,
+        agency: Annotated[str, "The agency abbreviation, such as GSA or HHS."] = "GSA",
+    ) -> dict:
+        """
+        This tool reads projects for a selected agency
+        from a configured Databricks table.
+        It returns agency, name, description, repository URL, and languages.
+        Results are ordered by project name.
+        The limit accepts 1–100 and defaults to 10.
+        The agency parameter filters results by the specified agency.
+        Languages is null for SSA because its current source structure lacks that field.
+        """
+        if not 1 <= limit <= 100:
+            raise ValueError("limit must be between 1 and 100")
+
+        allowed_agencies = {
+            "DHS", "DoD", "DoE", "EPA", "FEC", "GSA",
+            "HHS", "NSF", "SSA", "TREASURY", "USDA", "VA",
+        }
+        if agency not in allowed_agencies:
+            raise ValueError("agency must match a supported agency abbreviation")
+
+        agency_column = quote_identifier(agency)
+        if agency == "SSA":
+            languages_expression = "NULL"
+        else:
+            languages_expression = "projects.project.languages"
+        table_name = ".".join(
+            quote_identifier(os.environ[key])
+            for key in (
+                "DATABRICKS_CATALOG",
+                "DATABRICKS_SCHEMA",
+                "DATABRICKS_TABLE"
+                )
+        )
+        auth_mode = os.environ.get("DATABRICKS_READER_AUTH_MODE", "local")
+
+        if auth_mode == "local":
+            auth_options = {"auth_type": "databricks-oauth"}
+        elif auth_mode == "app":
+            auth_options = {
+                "credentials_provider": app_credentials_provider,
+            }
+        else:
+            raise ValueError(
+                "DATABRICKS_READER_AUTH_MODE must be local or app"
+            )
+        with sql.connect(
+            server_hostname=os.environ["DATABRICKS_SERVER_HOSTNAME"],
+            http_path=os.environ["DATABRICKS_HTTP_PATH"],
+            **auth_options,
+        ) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""SELECT
+                        raw.{agency_column}.agency AS agency,
+                        projects.project.name AS name,
+                        projects.project.description AS description,
+                        projects.project.repositoryURL AS repository_url,
+                        {languages_expression} AS languages
+                    FROM {table_name} AS raw,
+                    LATERAL explode(raw.{agency_column}.releases) AS projects(project)
+                    ORDER BY name
+                    LIMIT {limit}"""
+                )
+
+                result = {
+                    "columns": [column[0] for column in cursor.description],
+                    "rows": [list(row) for row in cursor.fetchall()],
+                }
+
+        return result
