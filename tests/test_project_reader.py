@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from example_server.models import ProjectDetail
 from example_server.project_reader import get_project_from_fixture
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "projects.json"
@@ -77,3 +78,21 @@ def test_missing_license_remains_null():
 
     assert project is not None
     assert project["licenses"] is None
+
+
+def test_response_excludes_contact_fields():
+    source = {
+        "entry_id": "mock-contact",
+        "name": "Example Project",
+        "contactName": "Example Contact",
+        "contactEmail": "contact@example.org",
+        "contactPhone": "example-phone",
+        "contactURL": "https://example.org/contact",
+    }
+
+    result = ProjectDetail.model_validate(source).model_dump()
+
+    assert result["entry_id"] == "mock-contact"
+    assert result["name"] == "Example Project"
+    assert result["description"] is None
+    assert not any(key.startswith("contact") for key in result)
