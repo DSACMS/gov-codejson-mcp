@@ -1,0 +1,38 @@
+[
+  {
+    "entry_id": "mock-001",
+    "source_identifier": "example-va-001",
+    "agency": "VA",
+    "organization": "Example VA Office",
+    "name": "Example Document Toolkit",
+    "description": "Tools for preparing accessible documents.",
+    "repositoryURL": "https://example.org/document-toolkit",
+    "version": "1.0",
+    "usageType": "openSource",
+    "licenses": "MIT",
+    "tags": "documents; accessibility",
+    "languages": "Python; JavaScript",
+    "laborHours": 0,
+    "dateCreated": "2024-03-01",
+    "dateLastModified": "2025-06-12",
+    "dateMetadataLastUpdated": "2025-06-15T14:30:00Z"
+  },
+  {
+    "entry_id": "mock-002",
+    "source_identifier": null,
+    "agency": "USDA",
+    "organization": null,
+    "name": "Example Inventory Viewer",
+    "description": null,
+    "repositoryURL": "https://example.org/inventory-viewer",
+    "version": null,
+    "usageType": "governmentWideReuse",
+    "licenses": null,
+    "tags": null,
+    "languages": null,
+    "laborHours": null,
+    "dateCreated": null,
+    "dateLastModified": "2024-08-20",
+    "dateMetadataLastUpdated": null
+  }
+]
