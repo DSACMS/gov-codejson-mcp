@@ -11,6 +11,16 @@ def parse_list_field(value: str | None) -> list[str] | None:
     return [item.strip() for item in value.split(";") if item.strip()]
 
 
+def parse_license_field(
+    value: str | None,
+) -> list[dict[str, str | None]] | None:
+    """Represent a supplied license name without inferring a URL."""
+    if value is None or not value.strip():
+        return None
+
+    return [{"name": value.strip(), "url": None}]
+
+
 def get_project_from_fixture(
     fixture_path: Path,
     entry_id: str,
@@ -34,4 +44,6 @@ def get_project_from_fixture(
     project = matches[0].copy()
     project["tags"] = parse_list_field(project.get("tags"))
     project["languages"] = parse_list_field(project.get("languages"))
+    project["licenses"] = parse_license_field(project.get("licenses"))
+
     return project

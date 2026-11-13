@@ -63,3 +63,17 @@ def test_missing_tags_and_languages_remain_null():
     assert project is not None
     assert project["tags"] is None
     assert project["languages"] is None
+
+
+def test_converts_license_name():
+    project = get_project_from_fixture(FIXTURE_PATH, "mock-001")
+
+    assert project is not None
+    assert project["licenses"] == [{"name": "MIT", "url": None}]
+
+
+def test_missing_license_remains_null():
+    project = get_project_from_fixture(FIXTURE_PATH, "mock-002")
+
+    assert project is not None
+    assert project["licenses"] is None
