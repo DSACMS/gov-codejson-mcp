@@ -65,3 +65,31 @@ async def test_warehouse_failure_is_not_reported_as_missing():
     assert "fictional-secret" not in message
     assert "internal-detail" not in message
     loader.assert_called_once_with("1006")
+
+
+@pytest.mark.asyncio
+async def test_invalid_project_returns_controlled_error():
+    loader = MagicMock(
+        return_value={
+            "entry_id": "invalid-project",
+            "languages": {"internal-detail": "fictional-secret"},
+        }
+    )
+    server = FastMCP("test")
+    project_tool.register(server, project_loader=loader)
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "govcode_get_project",
+            {"entry_id": "invalid-project"},
+            raise_on_error=False,
+        )
+
+    assert result.is_error
+    messages = "\n".join(
+        block.text for block in result.content if block.type == "text"
+    )
+    assert "Project lookup failed. Please try again later." in messages
+    assert "fictional-secret" not in messages
+    assert "internal-detail" not in messages
+    loader.assert_called_once_with("invalid-project")
