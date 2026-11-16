@@ -1,19 +1,25 @@
 import json
-from pathlib import Path
+from functools import partial
 
 import pytest
 from fastmcp import Client, FastMCP
 from fastmcp.exceptions import ToolError
 
+from example_server.project_reader import get_project_from_fixture
 from example_server.tools import project_tool
-
-FIXTURE_PATH = Path(__file__).parent / "fixtures" / "projects.json"
+from tests.test_project_reader import FIXTURE_PATH
 
 
 @pytest.mark.asyncio
 async def test_get_project_returns_converted_fields():
     server = FastMCP("test")
-    project_tool.register(server, fixture_path=FIXTURE_PATH)
+    project_tool.register(
+    server,
+    project_loader=partial(
+        get_project_from_fixture,
+        fixture_path=FIXTURE_PATH,
+    ),
+)
 
     async with Client(server) as client:
         result = await client.call_tool(
@@ -36,7 +42,13 @@ async def test_get_project_returns_converted_fields():
 @pytest.mark.asyncio
 async def test_get_project_preserves_nulls():
     server = FastMCP("test")
-    project_tool.register(server, fixture_path=FIXTURE_PATH)
+    project_tool.register(
+        server,
+        project_loader=partial(
+            get_project_from_fixture,
+            fixture_path=FIXTURE_PATH,
+        ),
+    )
 
     async with Client(server) as client:
         result = await client.call_tool(
@@ -54,7 +66,13 @@ async def test_get_project_preserves_nulls():
 @pytest.mark.asyncio
 async def test_get_project_unknown_id_returns_error():
     server = FastMCP("test")
-    project_tool.register(server, fixture_path=FIXTURE_PATH)
+    project_tool.register(
+    server,
+    project_loader=partial(
+        get_project_from_fixture,
+        fixture_path=FIXTURE_PATH,
+    ),
+)
 
     async with Client(server) as client:
         with pytest.raises(ToolError, match="Project entry not found"):
@@ -84,7 +102,13 @@ async def test_get_project_excludes_contact_fields(tmp_path):
     )
 
     server = FastMCP("test")
-    project_tool.register(server, fixture_path=fixture_path)
+    project_tool.register(
+        server,
+        project_loader=partial(
+            get_project_from_fixture,
+            fixture_path=fixture_path,
+        ),
+    )
 
     async with Client(server) as client:
         result = await client.call_tool(

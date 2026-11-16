@@ -23,8 +23,9 @@ def parse_license_field(
 
 
 def get_project_from_fixture(
-    fixture_path: Path,
     entry_id: str,
+    *,
+    fixture_path: Path,
 ) -> dict | None:
     """Return one entry by its exact ID, or None when not found."""
     with fixture_path.open(encoding="utf-8") as fixture_file:
