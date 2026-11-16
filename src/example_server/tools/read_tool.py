@@ -1,9 +1,9 @@
 import os
 from typing import Annotated
 
-from databricks import sql
-from databricks.sdk.core import Config, oauth_service_principal
 from fastmcp import FastMCP
+
+from example_server import warehouse
 
 
 def quote_identifier(identifier: str) -> str:
@@ -11,14 +11,6 @@ def quote_identifier(identifier: str) -> str:
     escaped_identifier = identifier.replace("`", "``")
     return "`" + escaped_identifier + "`"
 
-def app_credentials_provider():
-    """Provide OAuth credentials for the deployed App."""
-    config = Config(
-        host="https://" + os.environ["DATABRICKS_SERVER_HOSTNAME"],
-        client_id=os.environ["DATABRICKS_CLIENT_ID"],
-        client_secret=os.environ["DATABRICKS_CLIENT_SECRET"],
-    )
-    return oauth_service_principal(config)
 
 def register(mcp: FastMCP) -> None:
     @mcp.tool(
@@ -36,13 +28,12 @@ def register(mcp: FastMCP) -> None:
         agency: Annotated[str, "The agency abbreviation, such as GSA or HHS."] = "GSA",
     ) -> dict:
         """
-        This tool reads projects for a selected agency
-        from a configured Databricks table.
-        It returns agency, name, description, repository URL, and languages.
+        Read projects for a selected agency from a configured Databricks table.
+
+        Return agency, name, description, repository URL, and languages.
         Results are ordered by project name.
         The limit accepts 1–100 and defaults to 10.
-        The agency parameter filters results by the specified agency.
-        Languages is null for SSA because its current source structure lacks that field.
+        Languages is null for SSA because its source lacks that field.
         """
         if not 1 <= limit <= 100:
             raise ValueError("limit must be between 1 and 100")
@@ -59,31 +50,17 @@ def register(mcp: FastMCP) -> None:
             languages_expression = "NULL"
         else:
             languages_expression = "projects.project.languages"
+
         table_name = ".".join(
             quote_identifier(os.environ[key])
             for key in (
                 "DATABRICKS_CATALOG",
                 "DATABRICKS_SCHEMA",
-                "DATABRICKS_TABLE"
-                )
-        )
-        auth_mode = os.environ.get("DATABRICKS_READER_AUTH_MODE", "local")
-
-        if auth_mode == "local":
-            auth_options = {"auth_type": "databricks-oauth"}
-        elif auth_mode == "app":
-            auth_options = {
-                "credentials_provider": app_credentials_provider,
-            }
-        else:
-            raise ValueError(
-                "DATABRICKS_READER_AUTH_MODE must be local or app"
+                "DATABRICKS_TABLE",
             )
-        with sql.connect(
-            server_hostname=os.environ["DATABRICKS_SERVER_HOSTNAME"],
-            http_path=os.environ["DATABRICKS_HTTP_PATH"],
-            **auth_options,
-        ) as connection:
+        )
+
+        with warehouse.connect() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
                     f"""SELECT
