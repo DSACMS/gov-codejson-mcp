@@ -1,5 +1,6 @@
 """Read project entries from a local development fixture."""
 import json
+from datetime import date, datetime
 from pathlib import Path
 
 
@@ -46,4 +47,29 @@ def get_project_from_fixture(
     project["languages"] = parse_list_field(project.get("languages"))
     project["licenses"] = parse_license_field(project.get("licenses"))
 
-    return project
+    return prepare_project(matches[0])
+
+
+def format_date_field(value: date | datetime | str | None) -> str | None:
+    """Preserve supplied date or timestamp precision as ISO text."""
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+
+    return value
+
+
+def prepare_project(project: dict) -> dict:
+    """Convert inventory fields into project response values."""
+    prepared = project.copy()
+    prepared["tags"] = parse_list_field(project.get("tags"))
+    prepared["languages"] = parse_list_field(project.get("languages"))
+    prepared["licenses"] = parse_license_field(project.get("licenses"))
+
+    for field in (
+        "dateCreated",
+        "dateLastModified",
+        "dateMetadataLastUpdated",
+    ):
+        prepared[field] = format_date_field(project.get(field))
+
+    return prepared

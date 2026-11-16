@@ -1,10 +1,14 @@
 import json
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
 
 from example_server.models import ProjectDetail
-from example_server.project_reader import get_project_from_fixture
+from example_server.project_reader import (
+    get_project_from_fixture,
+    prepare_project,
+)
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "projects.json"
 
@@ -96,3 +100,31 @@ def test_response_excludes_contact_fields():
     assert result["name"] == "Example Project"
     assert result["description"] is None
     assert not any(key.startswith("contact") for key in result)
+
+
+def test_converts_typed_dates_without_adding_precision():
+    project = prepare_project(
+        {
+            "dateCreated": date(2024, 3, 1),
+            "dateLastModified": datetime(
+                2025, 6, 12, 14, 30, tzinfo=timezone.utc
+            ),
+            "dateMetadataLastUpdated": None,
+        }
+    )
+
+    assert project["dateCreated"] == "2024-03-01"
+    assert project["dateLastModified"] == "2025-06-12T14:30:00+00:00"
+    assert project["dateMetadataLastUpdated"] is None
+
+
+def test_preserves_existing_date_strings():
+    project = prepare_project(
+        {
+            "dateCreated": "2024-03-01",
+            "dateMetadataLastUpdated": "2025-06-15T14:30:00Z",
+        }
+    )
+
+    assert project["dateCreated"] == "2024-03-01"
+    assert project["dateMetadataLastUpdated"] == "2025-06-15T14:30:00Z"
