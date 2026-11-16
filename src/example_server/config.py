@@ -6,6 +6,9 @@ Every field can be overridden by an environment variable of the same name
 
 from __future__ import annotations
 
+from typing import Self
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -35,5 +38,30 @@ class Settings(BaseSettings):
     #
     #   example_api_key: str = ""   # ← set EXAMPLE_API_KEY in the environment
 
+
+    # Cleaned project inventory
+    govcode_project_lookup_enabled: bool = False
+    govcode_project_catalog: str = ""
+    govcode_project_schema: str = ""
+    govcode_project_table: str = ""
+
+    @model_validator(mode="after")
+    def validate_project_lookup_settings(self) -> Self:
+        """Require a complete table location when lookup is enabled."""
+        if self.govcode_project_lookup_enabled:
+            required = {
+                "GOVCODE_PROJECT_CATALOG": self.govcode_project_catalog,
+                "GOVCODE_PROJECT_SCHEMA": self.govcode_project_schema,
+                "GOVCODE_PROJECT_TABLE": self.govcode_project_table,
+            }
+            missing = [
+                name for name, value in required.items() if not value.strip()
+            ]
+            if missing:
+                raise ValueError(
+                    "Project lookup requires: " + ", ".join(missing)
+                )
+
+        return self
 
 settings = Settings()
