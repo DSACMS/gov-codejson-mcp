@@ -4,6 +4,7 @@ import pytest
 from fastmcp import Client, FastMCP
 from fastmcp.exceptions import ToolError
 
+from example_server.errors import DuplicateProjectError
 from example_server.tools import project_tool
 
 
@@ -26,13 +27,13 @@ async def test_missing_project_returns_not_found():
 @pytest.mark.asyncio
 async def test_duplicate_project_returns_error():
     loader = MagicMock(
-        side_effect=ValueError("Duplicate entry_id in warehouse")
+        side_effect=DuplicateProjectError("Duplicate entry_id in warehouse")
     )
     server = FastMCP("test")
     project_tool.register(server, project_loader=loader)
 
     async with Client(server) as client:
-        with pytest.raises(ToolError, match="Duplicate entry_id"):
+        with pytest.raises(ToolError, match="inventory needs correction"):
             await client.call_tool(
                 "govcode_get_project",
                 {"entry_id": "duplicate"},
@@ -44,7 +45,9 @@ async def test_duplicate_project_returns_error():
 @pytest.mark.asyncio
 async def test_warehouse_failure_is_not_reported_as_missing():
     loader = MagicMock(
-        side_effect=RuntimeError("Warehouse temporarily unavailable")
+        side_effect=RuntimeError(
+            "Warehouse unavailable; internal-detail=fictional-secret"
+        )
     )
     server = FastMCP("test")
     project_tool.register(server, project_loader=loader)
@@ -56,5 +59,9 @@ async def test_warehouse_failure_is_not_reported_as_missing():
                 {"entry_id": "1006"},
             )
 
-    assert "Project entry not found" not in str(error.value)
+    message = str(error.value)
+    assert "Project lookup failed. Please try again later." in message
+    assert "Project entry not found" not in message
+    assert "fictional-secret" not in message
+    assert "internal-detail" not in message
     loader.assert_called_once_with("1006")
