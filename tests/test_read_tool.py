@@ -4,6 +4,7 @@ import pytest
 from fastmcp import Client, FastMCP
 from fastmcp.exceptions import ToolError
 
+from example_server import warehouse
 from example_server.tools import read_tool
 
 
@@ -15,8 +16,10 @@ async def test_invalid_limit_does_not_connect(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SCHEMA", "test_schema")
     monkeypatch.setenv("DATABRICKS_TABLE", "test_table")
 
+    monkeypatch.setenv("DATABRICKS_READER_AUTH_MODE", "app")
+
     connect_mock = MagicMock()
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -54,7 +57,7 @@ async def test_preview_returns_project_rows(monkeypatch):
     connection_mock = connect_mock.return_value.__enter__.return_value
     cursor_context = connection_mock.cursor.return_value
     cursor_context.__enter__.return_value = cursor_mock
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
     server = FastMCP("test")
     read_tool.register(server)
 
@@ -95,7 +98,7 @@ async def test_preview_returns_empty_rows(monkeypatch):
     connection_mock = connect_mock.return_value.__enter__.return_value
     cursor_context = connection_mock.cursor.return_value
     cursor_context.__enter__.return_value = cursor_mock
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -134,7 +137,7 @@ async def test_preview_selects_hhs(monkeypatch):
     connection_mock = connect_mock.return_value.__enter__.return_value
     cursor_context = connection_mock.cursor.return_value
     cursor_context.__enter__.return_value = cursor_mock
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -164,7 +167,7 @@ async def test_invalid_agency_does_not_connect(monkeypatch):
     monkeypatch.setenv("DATABRICKS_TABLE", "test_table")
 
     connect_mock = MagicMock()
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -203,7 +206,7 @@ async def test_preview_selects_ssa_without_languages(monkeypatch):
     connection_mock = connect_mock.return_value.__enter__.return_value
     cursor_context = connection_mock.cursor.return_value
     cursor_context.__enter__.return_value = cursor_mock
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -235,7 +238,7 @@ async def test_app_mode_uses_credentials_provider(monkeypatch):
 
     provider_mock = MagicMock()
     monkeypatch.setattr(
-        read_tool,
+        warehouse,
         "app_credentials_provider",
         provider_mock,
     )
@@ -254,7 +257,7 @@ async def test_app_mode_uses_credentials_provider(monkeypatch):
     connection_mock = connect_mock.return_value.__enter__.return_value
     cursor_context = connection_mock.cursor.return_value
     cursor_context.__enter__.return_value = cursor_mock
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -290,7 +293,7 @@ async def test_invalid_auth_mode_does_not_connect(monkeypatch):
     monkeypatch.setenv("DATABRICKS_READER_AUTH_MODE", "unsupported")
 
     connect_mock = MagicMock()
-    monkeypatch.setattr(read_tool.sql, "connect", connect_mock)
+    monkeypatch.setattr(warehouse.sql, "connect", connect_mock)
 
     server = FastMCP("test")
     read_tool.register(server)
@@ -316,14 +319,14 @@ def test_app_credentials_provider_uses_runtime_settings(monkeypatch):
     config_factory = MagicMock(return_value=config_mock)
     oauth_factory = MagicMock()
 
-    monkeypatch.setattr(read_tool, "Config", config_factory)
+    monkeypatch.setattr(warehouse, "Config", config_factory)
     monkeypatch.setattr(
-        read_tool,
-        "oauth_service_principal",
-        oauth_factory,
+    warehouse,
+    "oauth_service_principal",
+    oauth_factory,
     )
 
-    provider = read_tool.app_credentials_provider()
+    provider = warehouse.app_credentials_provider()
 
     config_factory.assert_called_once_with(
         host="https://example.invalid",
