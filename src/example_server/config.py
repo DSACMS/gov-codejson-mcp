@@ -41,6 +41,7 @@ class Settings(BaseSettings):
 
     # Cleaned project inventory
     govcode_project_lookup_enabled: bool = False
+    govcode_project_search_enabled: bool = False
     govcode_project_catalog: str = ""
     govcode_project_schema: str = ""
     govcode_project_table: str = ""
@@ -48,7 +49,10 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_project_lookup_settings(self) -> Self:
         """Require a complete table location when lookup is enabled."""
-        if self.govcode_project_lookup_enabled:
+        if (
+            self.govcode_project_lookup_enabled
+            or self.govcode_project_search_enabled
+        ):
             required = {
                 "GOVCODE_PROJECT_CATALOG": self.govcode_project_catalog,
                 "GOVCODE_PROJECT_SCHEMA": self.govcode_project_schema,
@@ -59,7 +63,7 @@ class Settings(BaseSettings):
             ]
             if missing:
                 raise ValueError(
-                    "Project lookup requires: " + ", ".join(missing)
+                    "Project tools require: " + ", ".join(missing)
                 )
 
         return self
