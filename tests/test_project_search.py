@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock
 
+import pytest
+
 from example_server import warehouse
 from example_server.project_search import (
     build_search_filters,
@@ -113,3 +115,62 @@ def test_search_counts_all_matches_and_returns_one_page(monkeypatch):
     )
     assert where_clause in count_call.args[0]
     assert where_clause in page_call.args[0]
+
+@pytest.mark.parametrize(
+    ("total_count", "offset", "rows"),
+    [
+        (0, 0, []),
+        (3, 2, [("last-entry",)]),
+        (3, 3, []),
+        (3, 5, []),
+    ],
+)
+def test_search_handles_page_boundaries(
+    monkeypatch,
+    total_count,
+    offset,
+    rows,
+):
+    connect_mock = MagicMock()
+    connection = connect_mock.return_value.__enter__.return_value
+    cursor = connection.cursor.return_value.__enter__.return_value
+    cursor.fetchone.return_value = (total_count,)
+    cursor.description = [("entry_id",)]
+    cursor.fetchall.return_value = rows
+    monkeypatch.setattr(warehouse, "connect", connect_mock)
+
+    response = search_projects(
+        catalog="test_catalog",
+        schema="test_schema",
+        table="test_projects",
+        limit=2,
+        offset=offset,
+    )
+
+    assert response.total_count == total_count
+    assert len(response.results) == len(rows)
+    assert response.offset == offset
+    assert response.has_more is False
+
+
+@pytest.mark.parametrize(
+    "pagination",
+    [
+        {"limit": 0},
+        {"limit": 101},
+        {"offset": -1},
+    ],
+)
+def test_invalid_pagination_does_not_connect(monkeypatch, pagination):
+    connect_mock = MagicMock()
+    monkeypatch.setattr(warehouse, "connect", connect_mock)
+
+    with pytest.raises(ValueError):
+        search_projects(
+            catalog="test_catalog",
+            schema="test_schema",
+            table="test_projects",
+            **pagination,
+        )
+
+    connect_mock.assert_not_called()
