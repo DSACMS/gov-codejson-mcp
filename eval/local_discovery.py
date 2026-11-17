@@ -1,7 +1,11 @@
 """Evaluate discovery through local MCP using the live mock warehouse."""
 
 import asyncio
+import json
 import os
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
 from time import perf_counter
 
 from dotenv import load_dotenv
@@ -139,5 +143,61 @@ async def main() -> None:
     print("LLM evaluation and deployed App access: NOT TESTED")
 
 
+def run_with_report() -> None:
+    """Save an overall run summary, including unsuccessful runs."""
+    output_dir = Path(__file__).resolve().parent / "results"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    started_at = datetime.now(timezone.utc)
+    started = perf_counter()
+    report = {
+        "evaluation_type": "functional_workflow",
+        "execution_mode": "local_in_process_mcp",
+        "warehouse_identity": "local_user",
+        "dataset": "users.natalia_luzuriaga1.mock_dataset",
+        "dataset_snapshot": None,
+        "started_at": started_at.isoformat(),
+        "git_commit": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).resolve().parents[1],
+            text=True,
+        ).strip(),
+        "tracked_worktree_dirty": bool(
+            subprocess.check_output(
+                ["git", "status", "--porcelain", "--untracked-files=no"],
+                cwd=Path(__file__).resolve().parents[1],
+                text=True,
+            ).strip()
+        ),
+        "status": "RUNNING",
+        "llm_evaluated": False,
+        "deployed_app_evaluated": False,
+    }
+
+    try:
+        asyncio.run(main())
+    except AssertionError:
+        report["status"] = "FAIL"
+        report["error_type"] = "AssertionError"
+        raise
+    except Exception as error:
+        report["status"] = "ERROR"
+        report["error_type"] = type(error).__name__
+        raise
+    else:
+        report["status"] = "PASS"
+    finally:
+        report["finished_at"] = datetime.now(timezone.utc).isoformat()
+        report["elapsed_seconds"] = round(perf_counter() - started, 3)
+        report_path = output_dir / (
+            started_at.strftime("%Y%m%dT%H%M%S%fZ") + "-discovery.json"
+        )
+        report_path.write_text(
+            json.dumps(report, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print("Evaluation report:", report_path)
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    run_with_report()
