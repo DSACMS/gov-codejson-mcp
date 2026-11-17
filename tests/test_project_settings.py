@@ -8,6 +8,8 @@ from example_server.config import Settings
 def clear_project_environment(monkeypatch):
     for name in (
         "GOVCODE_PROJECT_LOOKUP_ENABLED",
+        "GOVCODE_PROJECT_SEARCH_ENABLED",
+        "GOVCODE_CATALOG_INFO_ENABLED",
         "GOVCODE_PROJECT_CATALOG",
         "GOVCODE_PROJECT_SCHEMA",
         "GOVCODE_PROJECT_TABLE",
@@ -20,6 +22,7 @@ def test_project_lookup_is_disabled_by_default():
 
     assert settings.govcode_project_lookup_enabled is False
     assert settings.govcode_project_search_enabled is False
+    assert settings.govcode_catalog_info_enabled is False
 
 
 @pytest.mark.parametrize(
@@ -63,6 +66,19 @@ def test_search_alone_requires_table_settings():
             _env_file=None,
             govcode_project_lookup_enabled=False,
             govcode_project_search_enabled=True,
+            govcode_project_catalog="test_catalog",
+            govcode_project_schema="test_schema",
+            govcode_project_table="",
+        )
+
+
+def test_catalog_alone_requires_table_settings():
+    with pytest.raises(ValidationError, match="GOVCODE_PROJECT_TABLE"):
+        Settings(
+            _env_file=None,
+            govcode_project_lookup_enabled=False,
+            govcode_project_search_enabled=False,
+            govcode_catalog_info_enabled=True,
             govcode_project_catalog="test_catalog",
             govcode_project_schema="test_schema",
             govcode_project_table="",

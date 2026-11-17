@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     # Cleaned project inventory
     govcode_project_lookup_enabled: bool = False
     govcode_project_search_enabled: bool = False
+    govcode_catalog_info_enabled: bool = False
     govcode_project_catalog: str = ""
     govcode_project_schema: str = ""
     govcode_project_table: str = ""
@@ -52,6 +53,7 @@ class Settings(BaseSettings):
         if (
             self.govcode_project_lookup_enabled
             or self.govcode_project_search_enabled
+            or self.govcode_catalog_info_enabled
         ):
             required = {
                 "GOVCODE_PROJECT_CATALOG": self.govcode_project_catalog,
