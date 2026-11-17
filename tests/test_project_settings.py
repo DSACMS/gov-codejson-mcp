@@ -19,6 +19,7 @@ def test_project_lookup_is_disabled_by_default():
     settings = Settings(_env_file=None)
 
     assert settings.govcode_project_lookup_enabled is False
+    assert settings.govcode_project_search_enabled is False
 
 
 @pytest.mark.parametrize(
@@ -54,3 +55,15 @@ def test_project_settings_load_from_environment(monkeypatch):
     assert settings.govcode_project_catalog == "test_catalog"
     assert settings.govcode_project_schema == "test_schema"
     assert settings.govcode_project_table == "test_projects"
+
+
+def test_search_alone_requires_table_settings():
+    with pytest.raises(ValidationError, match="GOVCODE_PROJECT_TABLE"):
+        Settings(
+            _env_file=None,
+            govcode_project_lookup_enabled=False,
+            govcode_project_search_enabled=True,
+            govcode_project_catalog="test_catalog",
+            govcode_project_schema="test_schema",
+            govcode_project_table="",
+        )

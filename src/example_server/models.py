@@ -71,3 +71,22 @@ class ProjectDetail(BaseModel):
     dateCreated: str | None = None
     dateLastModified: str | None = None
     dateMetadataLastUpdated: str | None = None
+
+
+class ProjectSearchFilters(BaseModel):
+    """Filters applied to the complete matching inventory."""
+
+    query: str | None = None
+    agency: str | None = None
+    organization: str | None = None
+
+
+class ProjectSearchResponse(BaseModel):
+    """One result page and the count across all matching entries."""
+
+    results: list[ProjectDetail]
+    total_count: int = Field(ge=0)
+    applied_filters: ProjectSearchFilters
+    limit: int = Field(default=10, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)
+    has_more: bool
