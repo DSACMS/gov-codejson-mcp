@@ -43,3 +43,31 @@ class PaginationParams(BaseModel):
         ge=0,
         description="Number of items to skip from the start of the result set.",
     )
+
+
+class ProjectLicense(BaseModel):
+    """License information supplied by the inventory."""
+
+    name: str
+    url: str | None = None
+
+
+class ProjectDetail(BaseModel):
+    """Project fields approved for discovery responses."""
+
+    entry_id: str
+    source_identifier: str | None = None
+    agency: str | None = None
+    organization: str | None = None
+    name: str | None = None
+    description: str | None = None
+    repositoryURL: str | None = None
+    version: str | None = None
+    usageType: str | None = None
+    licenses: list[ProjectLicense] | None = None
+    tags: list[str] | None = None
+    languages: list[str] | None = None
+    laborHours: float | None = None
+    dateCreated: str | None = None
+    dateLastModified: str | None = None
+    dateMetadataLastUpdated: str | None = None
