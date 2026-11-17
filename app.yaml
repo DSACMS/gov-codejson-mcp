@@ -21,3 +21,15 @@ env:
 
   - name: DATABRICKS_TABLE
     value: "gov_code_raw"
+
+  - name: GOVCODE_PROJECT_LOOKUP_ENABLED
+    value: "true"
+
+  - name: GOVCODE_PROJECT_CATALOG
+    value: "users"
+
+  - name: GOVCODE_PROJECT_SCHEMA
+    value: "natalia_luzuriaga1"
+
+  - name: GOVCODE_PROJECT_TABLE
+    value: "mock_dataset"
