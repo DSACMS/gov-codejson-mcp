@@ -13,9 +13,16 @@ from __future__ import annotations
 
 from functools import partial
 
+from example_server.catalog_reader import get_catalog_info
 from example_server.config import Settings, settings
 from example_server.project_search import search_projects
-from example_server.tools import example_tool, project_tool, read_tool, search_tool
+from example_server.tools import (
+    catalog_tool,
+    example_tool,
+    project_tool,
+    read_tool,
+    search_tool,
+)
 from example_server.warehouse_project_reader import get_project_from_warehouse
 
 
@@ -42,6 +49,17 @@ def register_tools(mcp, *, config: Settings | None = None) -> None:
             mcp,
             project_searcher=partial(
                 search_projects,
+                catalog=active_settings.govcode_project_catalog,
+                schema=active_settings.govcode_project_schema,
+                table=active_settings.govcode_project_table,
+            ),
+        )
+
+    if active_settings.govcode_catalog_info_enabled:
+        catalog_tool.register(
+            mcp,
+            catalog_loader=partial(
+                get_catalog_info,
                 catalog=active_settings.govcode_project_catalog,
                 schema=active_settings.govcode_project_schema,
                 table=active_settings.govcode_project_table,
