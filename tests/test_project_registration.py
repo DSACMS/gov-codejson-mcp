@@ -96,3 +96,36 @@ async def test_catalog_registration_is_independent(
     assert "govcode_get_project" not in names
     assert "govcode_search_projects" not in names
     connect_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("enabled", [False, True])
+async def test_comparison_registration_is_independent(
+    monkeypatch,
+    enabled,
+):
+    config = Settings(
+        _env_file=None,
+        govcode_project_lookup_enabled=False,
+        govcode_project_search_enabled=False,
+        govcode_catalog_info_enabled=False,
+        govcode_project_compare_enabled=enabled,
+        govcode_project_catalog="test_catalog",
+        govcode_project_schema="test_schema",
+        govcode_project_table="test_projects",
+    )
+    connect_mock = MagicMock()
+    monkeypatch.setattr(warehouse, "connect", connect_mock)
+
+    server = FastMCP("test")
+    register_tools(server, config=config)
+
+    async with Client(server) as client:
+        tools = await client.list_tools()
+
+    names = {tool.name for tool in tools}
+    assert ("govcode_compare_projects" in names) == enabled
+    assert "govcode_get_project" not in names
+    assert "govcode_search_projects" not in names
+    assert "govcode_catalog_info" not in names
+    connect_mock.assert_not_called()
