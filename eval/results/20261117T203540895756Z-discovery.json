@@ -1,0 +1,47 @@
+{
+  "evaluation_type": "functional_workflow",
+  "execution_mode": "local_in_process_mcp",
+  "warehouse_identity": "local_user",
+  "dataset": "users.natalia_luzuriaga1.mock_dataset",
+  "dataset_snapshot": null,
+  "started_at": "2026-11-17T20:35:40.895756+00:00",
+  "git_commit": "7138e619ab26ad9ef0274d90b72097804f19d8c3",
+  "tracked_worktree_dirty": false,
+  "status": "PASS",
+  "llm_evaluated": false,
+  "deployed_app_evaluated": false,
+  "cases": [
+    {
+      "name": "tool_discovery",
+      "status": "PASS",
+      "elapsed_seconds": 0.006
+    },
+    {
+      "name": "catalog_response",
+      "status": "PASS",
+      "elapsed_seconds": 11.651
+    },
+    {
+      "name": "search_to_detail",
+      "status": "PASS",
+      "elapsed_seconds": 21.764
+    },
+    {
+      "name": "no_match_search",
+      "status": "PASS",
+      "elapsed_seconds": 5.461
+    },
+    {
+      "name": "unknown_project",
+      "status": "PASS",
+      "elapsed_seconds": 5.392
+    },
+    {
+      "name": "invalid_pagination",
+      "status": "PASS",
+      "elapsed_seconds": 0.003
+    }
+  ],
+  "finished_at": "2026-11-17T20:36:25.312607+00:00",
+  "elapsed_seconds": 44.417
+}
