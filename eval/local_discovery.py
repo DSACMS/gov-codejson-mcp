@@ -96,6 +96,44 @@ async def main() -> None:
         print("Selected entry ID:", detail.entry_id)
         print(f"Elapsed seconds: {perf_counter() - started:.3f}")
 
+        started = perf_counter()
+        result = await client.call_tool(
+            "govcode_search_projects",
+            {
+                "query": "__govcode_no_match_839271__",
+                "limit": 2,
+            },
+        )
+        assert result.structured_content is not None
+        empty = ProjectSearchResponse.model_validate(
+            result.structured_content
+        )
+        assert empty.total_count == 0
+        assert empty.results == []
+        assert empty.has_more is False
+        print("No-match search: PASS")
+        print(f"Elapsed seconds: {perf_counter() - started:.3f}")
+
+        result = await client.call_tool(
+            "govcode_get_project",
+            {"entry_id": "__govcode_missing_entry_839271__"},
+            raise_on_error=False,
+        )
+        assert result.is_error
+        messages = "\n".join(
+            block.text for block in result.content if block.type == "text"
+        )
+        assert "Project entry not found" in messages
+        print("Unknown project handling: PASS")
+
+        result = await client.call_tool(
+            "govcode_search_projects",
+            {"limit": 101},
+            raise_on_error=False,
+        )
+        assert result.is_error
+        print("Invalid pagination rejected: PASS")
+
     print("Functional workflow: PASS")
     print("Mode: local MCP with local-user warehouse authentication")
     print("LLM evaluation and deployed App access: NOT TESTED")
