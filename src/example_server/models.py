@@ -90,3 +90,20 @@ class ProjectSearchResponse(BaseModel):
     limit: int = Field(default=10, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
     has_more: bool
+
+
+class InventoryGroupCount(BaseModel):
+    """Entry count for one agency and organization combination."""
+
+    agency: str | None = None
+    organization: str | None = None
+    project_count: int = Field(ge=0)
+
+
+class CatalogInfoResponse(BaseModel):
+    """Inventory coverage and available dataset provenance."""
+
+    total_count: int = Field(ge=0)
+    groups: list[InventoryGroupCount]
+    dataset_version: str | None = None
+    dataset_updated_at: str | None = None
