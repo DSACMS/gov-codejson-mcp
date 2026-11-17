@@ -11,13 +11,30 @@ To add a tool:
 
 from __future__ import annotations
 
-from example_server.tools import example_tool, read_tool
+from functools import partial
+
+from example_server.config import Settings, settings
+from example_server.tools import example_tool, project_tool, read_tool
+from example_server.warehouse_project_reader import get_project_from_warehouse
 
 
-def register_tools(mcp) -> None:
-    """Register all tools with the MCP server."""
+def register_tools(mcp, *, config: Settings | None = None) -> None:
+    """Register tools, including project lookup when explicitly enabled."""
+    active_settings = settings if config is None else config
+
     example_tool.register(mcp)
     read_tool.register(mcp)
+
+    if active_settings.govcode_project_lookup_enabled:
+        project_tool.register(
+            mcp,
+            project_loader=partial(
+                get_project_from_warehouse,
+                catalog=active_settings.govcode_project_catalog,
+                schema=active_settings.govcode_project_schema,
+                table=active_settings.govcode_project_table,
+            ),
+        )
 
 
 __all__ = ["register_tools"]

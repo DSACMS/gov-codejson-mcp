@@ -1,6 +1,7 @@
 """Read project details from the cleaned warehouse table."""
 
 from example_server import warehouse
+from example_server.errors import DuplicateProjectError
 from example_server.project_reader import prepare_project
 
 
@@ -48,7 +49,7 @@ def get_project_from_warehouse(
         return None
 
     if len(rows) > 1:
-        raise ValueError("Duplicate entry_id in warehouse")
+        raise DuplicateProjectError("Duplicate entry_id in warehouse")
 
     project = dict(zip(columns, rows[0], strict=True))
     return prepare_project(project)

@@ -4,7 +4,9 @@ from collections.abc import Callable
 from typing import Annotated
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 
+from example_server.errors import DuplicateProjectError
 from example_server.models import ProjectDetail
 
 
@@ -29,9 +31,22 @@ def register(
         entry_id: Annotated[str, "The inventory entry ID to retrieve."],
     ) -> ProjectDetail:
         """Return one inventory entry, including unavailable fields as null."""
-        project = project_loader(entry_id)
+        try:
+            project = project_loader(entry_id)
+
+            if project is not None:
+                detail = ProjectDetail.model_validate(project)
+        except DuplicateProjectError:
+            raise ToolError(
+                "Project lookup found duplicate entries; "
+                "the inventory needs correction."
+            ) from None
+        except Exception:
+            raise ToolError(
+                "Project lookup failed. Please try again later."
+            ) from None
 
         if project is None:
-            raise ValueError("Project entry not found")
+            raise ToolError("Project entry not found")
 
-        return ProjectDetail.model_validate(project)
+        return detail
