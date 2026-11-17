@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 
+from example_server.errors import InvalidComparisonRequest
 from example_server.models import ProjectComparisonResponse, ProjectDetail
 
 
@@ -12,16 +13,16 @@ def compare_projects(
 ) -> ProjectComparisonResponse:
     """Retrieve two to five distinct entries in the requested order."""
     if not 2 <= len(entry_ids) <= 5:
-        raise ValueError("Comparison requires between 2 and 5 entry IDs")
+        raise InvalidComparisonRequest("Comparison requires between 2 and 5 entry IDs")
 
     if any(
         not isinstance(entry_id, str) or not entry_id.strip()
         for entry_id in entry_ids
     ):
-        raise ValueError("Entry IDs must be nonblank strings")
+        raise InvalidComparisonRequest("Entry IDs must be nonblank strings")
 
     if len(set(entry_ids)) != len(entry_ids):
-        raise ValueError("Comparison requires distinct entry IDs")
+        raise InvalidComparisonRequest("Comparison requires distinct entry IDs")
 
     projects = []
     missing_entry_ids = []
