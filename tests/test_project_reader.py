@@ -7,6 +7,7 @@ import pytest
 from example_server.models import ProjectDetail
 from example_server.project_reader import (
     get_project_from_fixture,
+    parse_list_field,
     prepare_project,
 )
 
@@ -152,3 +153,28 @@ def test_preserves_existing_date_strings():
 
     assert project["dateCreated"] == "2024-03-01"
     assert project["dateMetadataLastUpdated"] == "2025-06-15T14:30:00Z"
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("Python|Shell", ["Python", "Shell"]),
+        (" Python | | Shell ", ["Python", "Shell"]),
+        ("Python", ["Python"]),
+        ("", None),
+        (None, None),
+    ],
+)
+def test_parses_pipe_separated_languages(value, expected):
+    assert parse_list_field(value, separator="|") == expected
+
+
+def test_default_separator_preserves_existing_mock_behavior():
+    assert parse_list_field("Python; JavaScript") == [
+        "Python",
+        "JavaScript",
+    ]
+
+
+def test_separator_is_explicit():
+    assert parse_list_field("Python|Shell") == ["Python|Shell"]
