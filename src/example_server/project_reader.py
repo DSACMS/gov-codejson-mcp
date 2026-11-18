@@ -4,12 +4,20 @@ from datetime import date, datetime
 from pathlib import Path
 
 
-def parse_list_field(value: str | None) -> list[str] | None:
-    """Convert semicolon-separated text into a list."""
+def parse_list_field(
+    value: str | None,
+    *,
+    separator: str = ";",
+) -> list[str] | None:
+    """Convert text using an explicitly supplied list separator."""
     if value is None or not value.strip():
         return None
 
-    return [item.strip() for item in value.split(";") if item.strip()]
+    return [
+        item.strip()
+        for item in value.split(separator)
+        if item.strip()
+    ]
 
 
 def parse_license_field(
