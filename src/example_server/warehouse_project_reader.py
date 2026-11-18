@@ -2,7 +2,7 @@
 
 from example_server import warehouse
 from example_server.errors import DuplicateProjectError
-from example_server.project_reader import prepare_project
+from example_server.inventory_layout import get_inventory_layout
 
 
 def get_project_from_warehouse(
@@ -11,8 +11,11 @@ def get_project_from_warehouse(
     catalog: str,
     schema: str,
     table: str,
+    dataset_format: str = "mock",
 ) -> dict | None:
     """Return one project, or None when its entry ID is not found."""
+    layout = get_inventory_layout(dataset_format)
+
     table_name = ".".join(
         "`" + identifier.replace("`", "``") + "`"
         for identifier in (catalog, schema, table)
@@ -21,24 +24,9 @@ def get_project_from_warehouse(
     with warehouse.connect() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                f"""SELECT
-                    CAST(id AS STRING) AS entry_id,
-                    agency,
-                    organization,
-                    name,
-                    description,
-                    repositoryURL,
-                    version,
-                    usageType,
-                    licenses,
-                    tags,
-                    languages,
-                    laborHours,
-                    dateCreated,
-                    dateLastModified,
-                    dateMetadataLastUpdated
+                f"""SELECT {layout.select_columns}
                 FROM {table_name}
-                WHERE CAST(id AS STRING) = ?
+                WHERE {layout.id_expression} = ?
                 LIMIT 2""",
                 parameters=[entry_id],
             )
@@ -52,4 +40,4 @@ def get_project_from_warehouse(
         raise DuplicateProjectError("Duplicate entry_id in warehouse")
 
     project = dict(zip(columns, rows[0], strict=True))
-    return prepare_project(project)
+    return layout.prepare_record(project)

@@ -40,6 +40,7 @@ def register_tools(mcp, *, config: Settings | None = None) -> None:
             mcp,
             project_loader=partial(
                 get_project_from_warehouse,
+                dataset_format=active_settings.govcode_project_dataset_format,
                 catalog=active_settings.govcode_project_catalog,
                 schema=active_settings.govcode_project_schema,
                 table=active_settings.govcode_project_table,
@@ -51,6 +52,7 @@ def register_tools(mcp, *, config: Settings | None = None) -> None:
             mcp,
             project_searcher=partial(
                 search_projects,
+                dataset_format=active_settings.govcode_project_dataset_format,
                 catalog=active_settings.govcode_project_catalog,
                 schema=active_settings.govcode_project_schema,
                 table=active_settings.govcode_project_table,
@@ -75,6 +77,7 @@ def register_tools(mcp, *, config: Settings | None = None) -> None:
                 compare_projects,
                 project_loader=partial(
                     get_project_from_warehouse,
+                    dataset_format=active_settings.govcode_project_dataset_format,
                     catalog=active_settings.govcode_project_catalog,
                     schema=active_settings.govcode_project_schema,
                     table=active_settings.govcode_project_table,
