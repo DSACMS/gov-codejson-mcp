@@ -1,12 +1,12 @@
 """Search filters shared by project count and result queries."""
 from example_server import warehouse
+from example_server.inventory_layout import get_inventory_layout
 from example_server.models import (
     PaginationParams,
     ProjectDetail,
     ProjectSearchFilters,
     ProjectSearchResponse,
 )
-from example_server.project_reader import prepare_project
 
 
 def build_search_filters(
@@ -53,10 +53,12 @@ def search_projects(
     query: str | None = None,
     agency: str | None = None,
     organization: str | None = None,
+    dataset_format: str = "mock",
     limit: int = 10,
     offset: int = 0,
 ) -> ProjectSearchResponse:
     """Count all matching entries and return one ordered result page."""
+    layout = get_inventory_layout(dataset_format)
     pagination = PaginationParams(limit=limit, offset=offset)
     filters, where_clause, parameters = build_search_filters(
         query=query,
@@ -77,22 +79,7 @@ def search_projects(
             total_count = cursor.fetchone()[0]
 
             cursor.execute(
-                f"""SELECT
-                    CAST(id AS STRING) AS entry_id,
-                    agency,
-                    organization,
-                    name,
-                    description,
-                    repositoryURL,
-                    version,
-                    usageType,
-                    licenses,
-                    tags,
-                    languages,
-                    laborHours,
-                    dateCreated,
-                    dateLastModified,
-                    dateMetadataLastUpdated
+                f"""SELECT {layout.select_columns}
                 FROM {table_name}{where_clause}
                 ORDER BY name ASC NULLS LAST, entry_id ASC
                 LIMIT ? OFFSET ?""",
@@ -107,7 +94,7 @@ def search_projects(
 
     results = [
         ProjectDetail.model_validate(
-            prepare_project(dict(zip(columns, row, strict=True)))
+            layout.prepare_record(dict(zip(columns, row, strict=True)))
         )
         for row in rows
     ]
