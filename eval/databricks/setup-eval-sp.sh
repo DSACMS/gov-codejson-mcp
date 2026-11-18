@@ -140,7 +140,7 @@ fi
 echo ""
 echo "=== 3. app permission (CAN_USE) ==="
 if "${DBX[@]}" apps get "${APP_NAME}" >/dev/null 2>&1; then
-  if "${DBX[@]}" apps set-permissions "${APP_NAME}" --json "{
+  "${DBX[@]}" apps update-permissions "${APP_NAME}" --json "{
     \"access_control_list\": [
       {\"service_principal_name\": \"${APP_ID}\", \"permission_level\": \"CAN_USE\"}
     ]
