@@ -15,9 +15,11 @@ from functools import partial
 
 from example_server.catalog_reader import get_catalog_info
 from example_server.config import Settings, settings
+from example_server.project_comparison import compare_projects
 from example_server.project_search import search_projects
 from example_server.tools import (
     catalog_tool,
+    compare_tool,
     example_tool,
     project_tool,
     read_tool,
@@ -63,6 +65,20 @@ def register_tools(mcp, *, config: Settings | None = None) -> None:
                 catalog=active_settings.govcode_project_catalog,
                 schema=active_settings.govcode_project_schema,
                 table=active_settings.govcode_project_table,
+            ),
+        )
+
+    if active_settings.govcode_project_compare_enabled:
+        compare_tool.register(
+            mcp,
+            project_comparer=partial(
+                compare_projects,
+                project_loader=partial(
+                    get_project_from_warehouse,
+                    catalog=active_settings.govcode_project_catalog,
+                    schema=active_settings.govcode_project_schema,
+                    table=active_settings.govcode_project_table,
+                ),
             ),
         )
 

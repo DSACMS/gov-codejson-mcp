@@ -107,3 +107,11 @@ class CatalogInfoResponse(BaseModel):
     groups: list[InventoryGroupCount]
     dataset_version: str | None = None
     dataset_updated_at: str | None = None
+
+
+class ProjectComparisonResponse(BaseModel):
+    """Inventory evidence for comparing requested project entries."""
+
+    requested_entry_ids: list[str] = Field(min_length=2, max_length=5)
+    projects: list[ProjectDetail]
+    missing_entry_ids: list[str]
