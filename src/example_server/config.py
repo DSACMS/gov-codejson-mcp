@@ -6,7 +6,7 @@ Every field can be overridden by an environment variable of the same name
 
 from __future__ import annotations
 
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     govcode_project_search_enabled: bool = False
     govcode_catalog_info_enabled: bool = False
     govcode_project_compare_enabled: bool = False
+    govcode_project_dataset_format: Literal["mock", "legacy"] = "mock"
     govcode_project_catalog: str = ""
     govcode_project_schema: str = ""
     govcode_project_table: str = ""
