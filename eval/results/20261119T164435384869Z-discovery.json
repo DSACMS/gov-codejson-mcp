@@ -1,0 +1,53 @@
+{
+  "evaluation_type": "functional_workflow",
+  "execution_mode": "local_in_process_mcp",
+  "warehouse_identity": "local_user",
+  "dataset": "users.natalia_luzuriaga1.legacy_gov_code",
+  "dataset_format": "legacy",
+  "dataset_snapshot": null,
+  "started_at": "2026-11-19T16:44:35.384869+00:00",
+  "git_commit": "f7ceb4d963aee9378b8e951f889ae5ae6231da1b",
+  "tracked_worktree_dirty": false,
+  "status": "PASS",
+  "llm_evaluated": false,
+  "deployed_app_evaluated": false,
+  "cases": [
+    {
+      "name": "tool_discovery",
+      "status": "PASS",
+      "elapsed_seconds": 0.009
+    },
+    {
+      "name": "catalog_response",
+      "status": "PASS",
+      "elapsed_seconds": 12.317
+    },
+    {
+      "name": "search_to_detail",
+      "status": "PASS",
+      "elapsed_seconds": 21.198
+    },
+    {
+      "name": "search_to_comparison",
+      "status": "PASS",
+      "elapsed_seconds": 14.821
+    },
+    {
+      "name": "no_match_search",
+      "status": "PASS",
+      "elapsed_seconds": 5.152
+    },
+    {
+      "name": "unknown_project",
+      "status": "PASS",
+      "elapsed_seconds": 4.903
+    },
+    {
+      "name": "invalid_pagination",
+      "status": "PASS",
+      "elapsed_seconds": 0.005
+    }
+  ],
+  "finished_at": "2026-11-19T16:45:33.919983+00:00",
+  "elapsed_seconds": 58.535
+}
