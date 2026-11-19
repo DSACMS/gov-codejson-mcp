@@ -1,4 +1,4 @@
-"""Evaluate discovery through local MCP using the live mock warehouse."""
+"""Evaluate discovery through local MCP using the live legacy inventory."""
 
 import asyncio
 import json
@@ -15,6 +15,7 @@ from fastmcp import Client, FastMCP
 from example_server.config import Settings
 from example_server.models import (
     CatalogInfoResponse,
+    ProjectComparisonResponse,
     ProjectDetail,
     ProjectSearchResponse,
 )
@@ -54,9 +55,11 @@ async def main(report: dict) -> None:
         govcode_project_lookup_enabled=True,
         govcode_project_search_enabled=True,
         govcode_catalog_info_enabled=True,
+        govcode_project_compare_enabled=True,
         govcode_project_catalog="users",
         govcode_project_schema="natalia_luzuriaga1",
-        govcode_project_table="mock_dataset",
+        govcode_project_table="legacy_gov_code",
+        govcode_project_dataset_format="legacy",
     )
     server = FastMCP("Local discovery evaluation")
     register_tools(server, config=config)
@@ -69,6 +72,7 @@ async def main(report: dict) -> None:
                 "govcode_catalog_info",
                 "govcode_search_projects",
                 "govcode_get_project",
+                "govcode_compare_projects",
             }
             assert required <= names, "Required discovery tools are missing"
             print("Tool discovery: PASS")
@@ -79,7 +83,7 @@ async def main(report: dict) -> None:
             catalog = CatalogInfoResponse.model_validate(
                 result.structured_content
             )
-            assert catalog.total_count > 0, "Expected a populated mock inventory"
+            assert catalog.total_count > 0, "Expected a populated legacy inventory"
             assert catalog.total_count == sum(
                 group.project_count for group in catalog.groups
             )
@@ -120,6 +124,50 @@ async def main(report: dict) -> None:
             print("Search-to-detail consistency: PASS")
             print("Matching entries:", search.total_count)
             print("Selected entry ID:", detail.entry_id)
+
+        with evaluated_case(report, "search_to_comparison"):
+            assert len(search.results) == 2, "Expected two search results"
+
+            # Reverse the search results to check requested ordering.
+            expected_projects = list(reversed(search.results))
+            known_ids = [project.entry_id for project in expected_projects]
+            assert len(set(known_ids)) == 2, "Expected distinct entry IDs"
+
+            missing_id = "__govcode_missing_entry_839271__"
+            requested_ids = [known_ids[0], missing_id, known_ids[1]]
+
+            result = await client.call_tool(
+                "govcode_compare_projects",
+                {"entry_ids": requested_ids},
+            )
+            assert result.structured_content is not None
+            comparison = ProjectComparisonResponse.model_validate(
+                result.structured_content
+            )
+
+            assert comparison.requested_entry_ids == requested_ids
+            assert comparison.missing_entry_ids == [missing_id]
+            assert [
+                project.entry_id for project in comparison.projects
+            ] == known_ids
+
+            for actual, expected in zip(
+                comparison.projects,
+                expected_projects,
+                strict=True,
+            ):
+                assert actual.model_dump() == expected.model_dump(), (
+                    f"Comparison differs from search for {expected.entry_id}"
+                )
+
+            assert not any(
+                key.startswith("contact")
+                for project in result.structured_content["projects"]
+                for key in project
+            )
+            print("Search-to-comparison consistency: PASS")
+            print("Compared entry IDs:", known_ids)
+            print("Missing entry IDs:", comparison.missing_entry_ids)
 
         with evaluated_case(report, "no_match_search"):
             result = await client.call_tool(
@@ -176,7 +224,8 @@ def run_with_report() -> None:
         "evaluation_type": "functional_workflow",
         "execution_mode": "local_in_process_mcp",
         "warehouse_identity": "local_user",
-        "dataset": "users.natalia_luzuriaga1.mock_dataset",
+        "dataset": "users.natalia_luzuriaga1.legacy_gov_code",
+        "dataset_format": "legacy",
         "dataset_snapshot": None,
         "started_at": started_at.isoformat(),
         "git_commit": subprocess.check_output(

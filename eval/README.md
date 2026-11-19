@@ -107,3 +107,29 @@ setup and teardown.
 The Databricks agent-evaluation scaffolding remains under `eval/databricks/`.
 It requires separate configuration and generated agent files. Its results
 must be reported separately from this functional evaluation.
+
+## Actual inventory functional verification
+
+On November 19, 2026, the local in-process MCP workflow passed all seven
+cases against `users.natalia_luzuriaga1.legacy_gov_code` using local-user
+warehouse authentication:
+
+- Tool discovery
+- Catalog response consistency
+- Search-to-detail consistency
+- Search-to-comparison consistency, including requested order and missing IDs
+- No-match search
+- Unknown-project handling
+- Invalid-pagination rejection
+
+The console reported 8,044 inventory entries and 10 VA matches for “data.”
+The saved report records a total elapsed time of 58.535 seconds.
+
+Report: [Actual inventory functional run](results/20261119T164435384869Z-discovery.json)
+
+Code revision: `f7ceb4d963aee9378b8e951f889ae5ae6231da1b`.
+The tracked worktree was clean when the run started.
+
+This was one functional run, not a performance benchmark or an LLM
+evaluation. Deployed App access was not tested. No immutable dataset
+snapshot was recorded.
