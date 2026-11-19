@@ -34,8 +34,8 @@ async def test_project_registration_follows_enable_setting(
     names = {tool.name for tool in tools}
 
     assert ("govcode_get_project" in names) == enabled
-    assert "databricks_preview_table" in names
-    assert "example_search_datasets" in names
+    assert "databricks_preview_table" not in names
+    assert "example_search_datasets" not in names
     connect_mock.assert_not_called()
 
 
