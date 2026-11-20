@@ -9,6 +9,8 @@ follow-up requests.
 This is a qualitative review of one guided conversation, not a benchmark
 or a general accuracy estimate.
 
+## November 18 legacy inventory session
+
 ## Test context
 
 - Date: November 18, 2026
@@ -84,3 +86,30 @@ ongoing maintenance, suitability, or specific reuse permission.
   and misleading or incomplete metadata.
 - Update the functional runner for the legacy dataset and comparison tool.
 - Repeat against the deployed endpoint when access is available.
+
+## Manual chat verification against the final inventory
+
+Dataset: `users.natalia_luzuriaga1.gov_code_complete`
+Client: ChatGPT Desktop using local STDIO and local-user authentication.
+
+| Check | Observed outcome |
+|---|---|
+| Coverage | Correctly reported 9,430 entries. Initially reported 12 agencies; enumerated 11 and corrected the answer after prompting. SQL and the functional report confirmed 11. |
+| Search | Reported 10 VA matches for “data,” with the expected first two records, final entry IDs, and repository links. |
+| Comparison and evidence limits | Returned both requested entries in order with no missing IDs. Described the checked metadata and did not claim established security, active maintenance, or reuse permission. |
+| Pagination | Returned different entries, `2026-VA-15` and `2026-VA-16`, with 10 total matches and more results remaining. |
+| Missing entry | Reported `__govcode_missing_entry_839271__` as not found without substituting another project. |
+
+This was one guided conversation with shared context, not independent trials.
+The initial agency-count answer failed that check; correction after prompting
+was recorded separately. Correct tool output did not guarantee correct model
+interpretation.
+
+This session did not verify the deployed App.
+
+The team confirmed that source `govcode_id` values persist across refreshes.
+The server exposes these values through the existing `entry_id` response field.
+
+Complete tool traces and exact per-call arguments are not included in this
+record. Model/effort settings and the exact loaded server revision were not
+confirmed for this session.

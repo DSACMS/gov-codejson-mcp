@@ -1,0 +1,68 @@
+{
+  "evaluation_type": "functional_workflow",
+  "execution_mode": "local_in_process_mcp",
+  "warehouse_identity": "local_user",
+  "dataset": "users.natalia_luzuriaga1.gov_code_complete",
+  "dataset_format": "complete",
+  "source_id_column": "govcode_id",
+  "dataset_snapshot": null,
+  "started_at": "2026-11-20T00:10:22.398682+00:00",
+  "git_commit": "a387e69b6861cda3a79d687b4a4afe526e36a244",
+  "tracked_worktree_dirty": false,
+  "status": "PASS",
+  "llm_evaluated": false,
+  "deployed_app_evaluated": false,
+  "cases": [
+    {
+      "name": "tool_discovery",
+      "status": "PASS",
+      "elapsed_seconds": 0.006
+    },
+    {
+      "name": "catalog_response",
+      "status": "PASS",
+      "elapsed_seconds": 13.589
+    },
+    {
+      "name": "search_to_detail",
+      "status": "PASS",
+      "elapsed_seconds": 23.863
+    },
+    {
+      "name": "search_to_comparison",
+      "status": "PASS",
+      "elapsed_seconds": 18.792
+    },
+    {
+      "name": "no_match_search",
+      "status": "PASS",
+      "elapsed_seconds": 7.387
+    },
+    {
+      "name": "unknown_project",
+      "status": "PASS",
+      "elapsed_seconds": 6.98
+    },
+    {
+      "name": "invalid_pagination",
+      "status": "PASS",
+      "elapsed_seconds": 0.005
+    }
+  ],
+  "observed_inventory": {
+    "total_count": 9430,
+    "group_count": 67,
+    "agency_count": 11
+  },
+  "observed_search": {
+    "query": "data",
+    "agency": "VA",
+    "total_count": 10,
+    "returned_entry_ids": [
+      "2026-VA-1",
+      "2026-VA-13"
+    ]
+  },
+  "finished_at": "2026-11-20T00:11:33.146825+00:00",
+  "elapsed_seconds": 70.749
+}

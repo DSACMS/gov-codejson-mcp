@@ -44,10 +44,12 @@ class Settings(BaseSettings):
     govcode_project_search_enabled: bool = False
     govcode_catalog_info_enabled: bool = False
     govcode_project_compare_enabled: bool = False
-    govcode_project_dataset_format: Literal["mock", "legacy"] = "mock"
     govcode_project_catalog: str = ""
     govcode_project_schema: str = ""
     govcode_project_table: str = ""
+    govcode_project_dataset_format: Literal[
+        "mock", "legacy", "complete"
+    ] = "mock"
 
     @model_validator(mode="after")
     def validate_project_lookup_settings(self) -> Self:

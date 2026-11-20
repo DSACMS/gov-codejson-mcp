@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from example_server.complete_project_adapter import prepare_complete_project
 from example_server.legacy_project_adapter import prepare_legacy_project
 from example_server.project_reader import prepare_project
 
@@ -18,6 +19,13 @@ class InventoryLayout:
 
 def _prepare_legacy_record(record: dict) -> dict:
     return prepare_legacy_project(
+        record,
+        entry_id=record["entry_id"],
+    ).model_dump()
+
+
+def _prepare_complete_record(record: dict) -> dict:
+    return prepare_complete_project(
         record,
         entry_id=record["entry_id"],
     ).model_dump()
@@ -69,4 +77,30 @@ def get_inventory_layout(dataset_format: str) -> InventoryLayout:
             prepare_record=_prepare_legacy_record,
         )
 
-    raise ValueError("dataset_format must be mock or legacy")
+    if dataset_format == "complete":
+        return InventoryLayout(
+            select_columns="""
+                govcode_id AS entry_id,
+                identifier,
+                agency,
+                organization,
+                name,
+                description,
+                repositoryURL,
+                version,
+                permissions_usageType,
+                permissions_licenses,
+                permissions_licenses_name,
+                permissions_licenses_URL,
+                tags,
+                languages,
+                laborHours,
+                date_created,
+                date_lastModified,
+                date_metadataLastUpdated
+            """,
+            id_expression="govcode_id",
+            prepare_record=_prepare_complete_record,
+        )
+
+    raise ValueError("dataset_format must be mock, legacy, or complete")
