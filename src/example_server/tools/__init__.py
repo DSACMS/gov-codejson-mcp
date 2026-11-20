@@ -20,20 +20,15 @@ from example_server.project_search import search_projects
 from example_server.tools import (
     catalog_tool,
     compare_tool,
-    example_tool,
     project_tool,
-    read_tool,
     search_tool,
 )
 from example_server.warehouse_project_reader import get_project_from_warehouse
 
 
 def register_tools(mcp, *, config: Settings | None = None) -> None:
-    """Register tools, including project lookup when explicitly enabled."""
+    """Register the inventory tools explicitly enabled in configuration."""
     active_settings = settings if config is None else config
-
-    example_tool.register(mcp)
-    read_tool.register(mcp)
 
     if active_settings.govcode_project_lookup_enabled:
         project_tool.register(

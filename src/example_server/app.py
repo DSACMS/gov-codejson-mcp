@@ -27,13 +27,22 @@ from example_server.resources import register_resources
 from example_server.routes import register_routes
 from example_server.tools import register_tools
 
-# The server name is what MCP clients display. Rename it to your service.
+# MCP clients display this name and receive these server instructions.
 mcp = FastMCP(
-    name="Example MCP Server",
+    name="Government Software Inventory",
     instructions=(
-        "Starter MCP server for the GSA MCP hackathon. "
-        "Replace this description, the tools, and the package name with your "
-        "own service. See the repo README to get started."
+        "Discover federal software inventory entries using the enabled tools. "
+        "Use catalog information to describe the configured inventory's coverage. "
+        "Search matches literal text in project names or descriptions; "
+        "agency and organization filters use exact values. "
+        "Use entry_id values returned by search for lookup and comparison. "
+        "Keep separate inventory entries distinct even when they share a repository. "
+        "Describe missing values as unknown. "
+        "Listed technologies may include operating systems and platforms. "
+        "Inventory metadata and usage classifications do not establish security, "
+        "active maintenance, suitability, or legal permission to reuse software. "
+        "Software modification dates are not dataset refresh dates. "
+        "Do not invent missing records, licenses, scores, or comparison winners."
     ),
 )
 

@@ -1,8 +1,4 @@
-"""Smoke tests for the example MCP server.
-
-These verify the server imports and every submodule registers without error.
-Add functional tests for your own tools as you build them.
-"""
+"""Smoke tests for the Government Software Inventory MCP server."""
 
 from __future__ import annotations
 
@@ -18,7 +14,7 @@ def test_server_is_importable():
 
 
 def test_server_has_name():
-    assert mcp.name == "Example MCP Server"
+    assert mcp.name == "Government Software Inventory"
 
 
 def test_default_transport_is_stdio():
@@ -32,16 +28,17 @@ def test_tools_register_without_error():
     register_tools(FastMCP("test"))  # must not raise
 
 
-def test_prompts_register_without_error():
-    from example_server.prompts import register_prompts
+@pytest.mark.asyncio
+async def test_application_advertises_no_prompts():
+    """Starter prompts should not appear in the application."""
+    assert await mcp.list_prompts() == []
 
-    register_prompts(FastMCP("test"))  # must not raise
 
-
-def test_resources_register_without_error():
-    from example_server.resources import register_resources
-
-    register_resources(FastMCP("test"))  # must not raise
+@pytest.mark.asyncio
+async def test_application_advertises_no_resources():
+    """Starter resources and templates should not appear."""
+    assert await mcp.list_resources() == []
+    assert await mcp.list_resource_templates() == []
 
 
 def test_routes_register_without_error():
@@ -51,8 +48,10 @@ def test_routes_register_without_error():
 
 
 @pytest.mark.asyncio
-async def test_example_tool_is_discoverable():
-    """The example tool should be registered and discoverable via the MCP API."""
+async def test_starter_tools_are_not_discoverable():
+    """The application should not advertise retired starter tools."""
     tools = await mcp.list_tools()
-    tool_names = {t.name for t in tools}
-    assert "example_search_datasets" in tool_names
+    tool_names = {tool.name for tool in tools}
+
+    assert "example_search_datasets" not in tool_names
+    assert "databricks_preview_table" not in tool_names
