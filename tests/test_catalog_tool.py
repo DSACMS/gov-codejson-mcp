@@ -49,9 +49,7 @@ async def test_catalog_returns_coverage_and_unknown_provenance():
 
 @pytest.mark.asyncio
 async def test_catalog_failure_returns_controlled_error():
-    loader = MagicMock(
-        side_effect=RuntimeError("internal-detail=fictional-secret")
-    )
+    loader = MagicMock(side_effect=RuntimeError("internal-detail=fictional-secret"))
     server = FastMCP("test")
     catalog_tool.register(server, catalog_loader=loader)
 
@@ -63,9 +61,7 @@ async def test_catalog_failure_returns_controlled_error():
         )
 
     assert result.is_error
-    messages = "\n".join(
-        block.text for block in result.content if block.type == "text"
-    )
+    messages = "\n".join(block.text for block in result.content if block.type == "text")
     assert "Catalog information could not be retrieved." in messages
     assert "fictional-secret" not in messages
     loader.assert_called_once_with()

@@ -39,8 +39,18 @@ def register(mcp: FastMCP) -> None:
             raise ValueError("limit must be between 1 and 100")
 
         allowed_agencies = {
-            "DHS", "DoD", "DoE", "EPA", "FEC", "GSA",
-            "HHS", "NSF", "SSA", "TREASURY", "USDA", "VA",
+            "DHS",
+            "DoD",
+            "DoE",
+            "EPA",
+            "FEC",
+            "GSA",
+            "HHS",
+            "NSF",
+            "SSA",
+            "TREASURY",
+            "USDA",
+            "VA",
         }
         if agency not in allowed_agencies:
             raise ValueError("agency must match a supported agency abbreviation")

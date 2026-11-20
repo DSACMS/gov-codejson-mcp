@@ -59,9 +59,7 @@ def test_complete_layout_maps_stable_id_and_final_fields():
             "version": "1.0",
             "permissions_usageType": "openSource",
             "permissions_licenses_name": "Apache-2.0",
-            "permissions_licenses_URL": (
-                "https://api.github.com/licenses/apache-2.0"
-            ),
+            "permissions_licenses_URL": ("https://api.github.com/licenses/apache-2.0"),
             "languages": "Python|Shell",
             "date_metadataLastUpdated": "2026-11-19T12:00:00",
             "contact_email": "contact@example.org",

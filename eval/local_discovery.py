@@ -80,9 +80,7 @@ async def main(report: dict) -> None:
         with evaluated_case(report, "catalog_response"):
             result = await client.call_tool("govcode_catalog_info", {})
             assert result.structured_content is not None
-            catalog = CatalogInfoResponse.model_validate(
-                result.structured_content
-            )
+            catalog = CatalogInfoResponse.model_validate(result.structured_content)
             assert catalog.total_count > 0, "Expected a populated final inventory"
             assert catalog.total_count == sum(
                 group.project_count for group in catalog.groups
@@ -109,9 +107,7 @@ async def main(report: dict) -> None:
                 {"query": "data", "agency": "VA", "limit": 2},
             )
             assert result.structured_content is not None
-            search = ProjectSearchResponse.model_validate(
-                result.structured_content
-            )
+            search = ProjectSearchResponse.model_validate(result.structured_content)
             assert search.results, "Expected VA matches for 'data'"
             assert search.total_count >= len(search.results)
             assert len(search.results) <= 2
@@ -134,9 +130,7 @@ async def main(report: dict) -> None:
                 "query": search.applied_filters.query,
                 "agency": search.applied_filters.agency,
                 "total_count": search.total_count,
-                "returned_entry_ids": [
-                    project.entry_id for project in search.results
-                ],
+                "returned_entry_ids": [project.entry_id for project in search.results],
             }
             assert not any(
                 key.startswith("contact") for key in result.structured_content
@@ -167,9 +161,7 @@ async def main(report: dict) -> None:
 
             assert comparison.requested_entry_ids == requested_ids
             assert comparison.missing_entry_ids == [missing_id]
-            assert [
-                project.entry_id for project in comparison.projects
-            ] == known_ids
+            assert [project.entry_id for project in comparison.projects] == known_ids
 
             for actual, expected in zip(
                 comparison.projects,
@@ -198,9 +190,7 @@ async def main(report: dict) -> None:
                 },
             )
             assert result.structured_content is not None
-            empty = ProjectSearchResponse.model_validate(
-                result.structured_content
-            )
+            empty = ProjectSearchResponse.model_validate(result.structured_content)
             assert empty.total_count == 0
             assert empty.results == []
             assert empty.has_more is False

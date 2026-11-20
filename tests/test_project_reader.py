@@ -131,9 +131,7 @@ def test_converts_typed_dates_without_adding_precision():
     project = prepare_project(
         {
             "dateCreated": date(2024, 3, 1),
-            "dateLastModified": datetime(
-                2025, 6, 12, 14, 30, tzinfo=timezone.utc
-            ),
+            "dateLastModified": datetime(2025, 6, 12, 14, 30, tzinfo=timezone.utc),
             "dateMetadataLastUpdated": None,
         }
     )

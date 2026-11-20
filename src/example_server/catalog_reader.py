@@ -32,9 +32,7 @@ def get_catalog_info(
             rows = cursor.fetchall()
 
     groups = [
-        InventoryGroupCount.model_validate(
-            dict(zip(columns, row, strict=True))
-        )
+        InventoryGroupCount.model_validate(dict(zip(columns, row, strict=True)))
         for row in rows
     ]
 

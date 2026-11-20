@@ -31,3 +31,41 @@ jobs:
 
       - name: Run tests
         run: uv run pytest tests/ -v
+
+  docker:
+    name: Docker build and health check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build --tag gov-code-mcp:ci .
+
+      - name: Start container
+        run: |
+          docker run --detach \
+            --name gov-code-smoke \
+            --publish 127.0.0.1:8080:8080 \
+            gov-code-mcp:ci
+
+      - name: Check HTTP health endpoint
+        run: |
+          curl --fail --show-error --silent \
+            --retry 20 \
+            --retry-delay 2 \
+            --retry-all-errors \
+            --retry-max-time 60 \
+            --max-time 5 \
+            http://127.0.0.1:8080/health
+
+      - name: Show container logs
+        if: always()
+        run: docker logs gov-code-smoke || true
+
+      - name: Remove container
+        if: always()
+        run: docker rm --force gov-code-smoke || true

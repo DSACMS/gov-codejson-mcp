@@ -73,9 +73,7 @@ async def test_invalid_comparison_does_not_call_reader(entry_ids):
 
 @pytest.mark.asyncio
 async def test_comparison_returns_controlled_reader_failure():
-    loader = MagicMock(
-        side_effect=RuntimeError("internal-detail=fictional-secret")
-    )
+    loader = MagicMock(side_effect=RuntimeError("internal-detail=fictional-secret"))
     server = build_server(loader)
 
     async with Client(server) as client:
@@ -86,8 +84,6 @@ async def test_comparison_returns_controlled_reader_failure():
         )
 
     assert result.is_error
-    messages = "\n".join(
-        block.text for block in result.content if block.type == "text"
-    )
+    messages = "\n".join(block.text for block in result.content if block.type == "text")
     assert "Project comparison failed. Please try again later." in messages
     assert "fictional-secret" not in messages

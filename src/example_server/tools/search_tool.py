@@ -65,6 +65,4 @@ def register(
                 offset=offset,
             )
         except Exception:
-            raise ToolError(
-                "Project search failed. Please try again later."
-            ) from None
+            raise ToolError("Project search failed. Please try again later.") from None

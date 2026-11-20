@@ -38,7 +38,6 @@ class Settings(BaseSettings):
     #
     #   example_api_key: str = ""   # ← set EXAMPLE_API_KEY in the environment
 
-
     # Cleaned project inventory
     govcode_project_lookup_enabled: bool = False
     govcode_project_search_enabled: bool = False
@@ -47,9 +46,7 @@ class Settings(BaseSettings):
     govcode_project_catalog: str = ""
     govcode_project_schema: str = ""
     govcode_project_table: str = ""
-    govcode_project_dataset_format: Literal[
-        "mock", "legacy", "complete"
-    ] = "mock"
+    govcode_project_dataset_format: Literal["mock", "legacy", "complete"] = "mock"
 
     @model_validator(mode="after")
     def validate_project_lookup_settings(self) -> Self:
@@ -65,14 +62,11 @@ class Settings(BaseSettings):
                 "GOVCODE_PROJECT_SCHEMA": self.govcode_project_schema,
                 "GOVCODE_PROJECT_TABLE": self.govcode_project_table,
             }
-            missing = [
-                name for name, value in required.items() if not value.strip()
-            ]
+            missing = [name for name, value in required.items() if not value.strip()]
             if missing:
-                raise ValueError(
-                    "Project tools require: " + ", ".join(missing)
-                )
+                raise ValueError("Project tools require: " + ", ".join(missing))
 
         return self
+
 
 settings = Settings()

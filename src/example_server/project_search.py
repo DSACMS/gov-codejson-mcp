@@ -1,4 +1,5 @@
 """Search filters shared by project count and result queries."""
+
 from example_server import warehouse
 from example_server.inventory_layout import get_inventory_layout
 from example_server.models import (

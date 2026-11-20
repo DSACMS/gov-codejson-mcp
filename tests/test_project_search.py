@@ -103,10 +103,16 @@ def test_search_counts_all_matches_and_returns_one_page(monkeypatch):
     assert "COUNT(*)" in count_call.args[0]
     assert "LIMIT" not in count_call.args[0]
     assert count_call.kwargs["parameters"] == [
-        "documents", "documents", "VA",
+        "documents",
+        "documents",
+        "VA",
     ]
     assert page_call.kwargs["parameters"] == [
-        "documents", "documents", "VA", 1, 2,
+        "documents",
+        "documents",
+        "VA",
+        1,
+        2,
     ]
 
     _, where_clause, _ = build_search_filters(
@@ -115,6 +121,7 @@ def test_search_counts_all_matches_and_returns_one_page(monkeypatch):
     )
     assert where_clause in count_call.args[0]
     assert where_clause in page_call.args[0]
+
 
 @pytest.mark.parametrize(
     ("total_count", "offset", "rows"),
