@@ -18,7 +18,7 @@ def register(
     @mcp.tool(
         name="govcode_catalog_info",
         annotations={
-            "title": "Government Software Inventory Coverage",
+            "title": "Federal Source Code Inventory Coverage",
             "readOnlyHint": True,
             "destructiveHint": False,
             "idempotentHint": True,

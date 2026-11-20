@@ -1,16 +1,10 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
-  "name": "io.github.GSA-TTS/example-mcp-server",
-  "description": "Starter MCP server for the GSA MCP hackathon. Replace this description and the coordinates below with your own server.",
+  "name": "io.github.DSACMS/gov-codejson-mcp",
+  "description": "Read-only discovery and comparison of federal source code inventory metadata.",
   "repository": {
-    "url": "https://github.com/GSA-TTS/example-mcp-server",
+    "url": "https://github.com/DSACMS/gov-codejson-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
-  "remotes": [
-    {
-      "type": "streamable-http",
-      "url": "https://example-mcp-server.app.cloud.gov/mcp"
-    }
-  ]
+  "version": "0.1.0"
 }

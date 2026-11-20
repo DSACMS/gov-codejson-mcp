@@ -1,4 +1,4 @@
-"""Smoke tests for the Government Software Inventory MCP server."""
+"""Smoke tests for the Federal Source Code Inventory MCP server."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ def test_server_is_importable():
 
 
 def test_server_has_name():
-    assert mcp.name == "Government Software Inventory"
+    assert mcp.name == "Federal Source Code Inventory"
 
 
 def test_default_transport_is_stdio():

@@ -22,51 +22,6 @@ Search is not semantic ranking.
 
 Search defaults to 10 results per page, supports up to 100, and uses an offset for pagination. Results are ordered by name, then entry ID.
 
-## Repository structure
-
-```text
-gov-codejson-mcp/
-├── README.md
-├── QUICKSTART.md                   # Original template walkthrough
-├── pyproject.toml                  # Package, dependencies, and console command
-├── .env.example                    # Local configuration reference
-├── app.yaml                        # Databricks App configuration
-├── src/
-│   └── example_server/
-│       ├── app.py                  # Server identity, instructions, and transport
-│       ├── config.py               # Environment-based settings
-│       ├── models.py               # Tool input and response models
-│       ├── errors.py               # Inventory error types
-│       ├── warehouse.py            # Shared Databricks connection setup
-│       ├── inventory_layout.py     # Source columns and record adapters
-│       ├── project_reader.py       # Shared record preparation
-│       ├── legacy_project_adapter.py
-│       ├── warehouse_project_reader.py
-│       ├── project_search.py       # Filters, counts, and result pages
-│       ├── project_comparison.py   # Ordered comparison evidence
-│       ├── catalog_reader.py       # Inventory coverage counts
-│       ├── routes.py               # HTTP infrastructure routes
-│       ├── tools/
-│       │   ├── __init__.py         # Registration controlled by feature flags
-│       │   ├── catalog_tool.py
-│       │   ├── search_tool.py
-│       │   ├── project_tool.py
-│       │   └── compare_tool.py
-│       ├── prompts/               # Prompt registration hook
-│       └── resources/             # Resource registration hook
-├── tests/                         # Automated tests
-├── eval/
-│   ├── README.md                  # Methodology, results, and limitations
-│   ├── local_discovery.py         # Live functional workflow
-│   ├── results/                   # Saved evaluation reports
-│   └── databricks/                # Agent-evaluation scaffolding
-├── deploy/                        # Inherited deployment guides and scripts
-└── docs/                          # Partner reference materials
-```
-
-Selected files are shown; this is not an exhaustive directory listing.
-The Python package and console command retain their original names, `example_server` and `example-server`.
-
 ### Example workflow
 
 In an MCP-capable client connected to this server, ask:
@@ -83,22 +38,35 @@ Local interactive verification has used MCP Inspector and ChatGPT Desktop.
 
 ## Data and interpretation
 
-The cleaned inventory is stored in
-`users.natalia_luzuriaga1.legacy_gov_code`.
+The configured inventory is stored in
+`users.natalia_luzuriaga1.gov_code_complete`.
 
-Local verification on November 19, 2026 reported 8,044 entries across 10 represented agencies. These counts describe the configured inventory at the time of testing, not comprehensive federal software coverage.
+The latest recorded functional verification, completed November 19, 2026
+(Mountain Time), observed 9,430 inventory entries across 11 agencies and
+67 agency and organization groups. Counts describe that evaluated table
+at that time, not comprehensive federal source code coverage.
 
-The server supports two explicit dataset formats:
+The server maps the source `govcode_id` column to the public `entry_id`
+field. The team confirmed that these IDs persist across dataset refreshes.
 
-- `mock`: the development table’s original column names and list encoding.
-- `legacy`: the cleaned inventory’s `entry_id`, flattened fields,
-  pipe-separated lists, and timestamp columns.
+The server supports three explicit dataset formats:
+
+- `complete`: the current inventory in `gov_code_complete`. Maps stable
+  source `govcode_id` values to the public `entry_id` field and supports
+  pipe-separated lists, license names and URLs, versions, and metadata dates.
+- `legacy`: the earlier flattened inventory, using a source `entry_id`
+  column, pipe-separated lists, and timestamp columns. Retained for
+  compatibility and historical evaluation.
+- `mock`: the original development-table layout, using a source `id`
+  column and semicolon-separated lists. Retained for development and tests.
+
+Use `GOVCODE_PROJECT_DATASET_FORMAT=complete` with the current inventory.
 
 ### Entry identity
 
 Use `entry_id` values returned by the server for lookup and comparison. Source identifiers and repository URLs can be shared by different inventory entries and are not reliable unique lookup keys.
 
-The current generated entry IDs are provisional. Persistent assignment across dataset refreshes remains backend follow-up work. Duplicate matches produce a controlled lookup error rather than selecting an arbitrary record.
+The source `govcode_id` uniquely identifies an inventory entry and remains stable across dataset refreshes, as confirmed by the team. The server exposes it through the public `entry_id` field. Duplicate matches produce a controlled lookup error rather than selecting an arbitrary record.
 
 ### What the inventory does not establish
 
@@ -146,10 +114,10 @@ DATABRICKS_READER_AUTH_MODE=local
 DATABRICKS_SERVER_HOSTNAME=<workspace-hostname-without-https>
 DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/<warehouse-id>
 
-GOVCODE_PROJECT_DATASET_FORMAT=legacy
+GOVCODE_PROJECT_DATASET_FORMAT=complete
 GOVCODE_PROJECT_CATALOG=users
 GOVCODE_PROJECT_SCHEMA=natalia_luzuriaga1
-GOVCODE_PROJECT_TABLE=[project]
+GOVCODE_PROJECT_TABLE=gov_code_complete
 
 GOVCODE_PROJECT_LOOKUP_ENABLED=true
 GOVCODE_PROJECT_SEARCH_ENABLED=true
@@ -253,9 +221,53 @@ The IBM deployment paths have not been verified for this project.
 - `eval/`: functional evaluation, reports, and Databricks agent-evaluation scaffolding
 - `deploy/`: inherited deployment guides and scripts
 
+```text
+gov-codejson-mcp/
+├── README.md
+├── QUICKSTART.md                   # Original template walkthrough
+├── pyproject.toml                  # Package, dependencies, and console command
+├── .env.example                    # Local configuration reference
+├── app.yaml                        # Databricks App configuration
+├── src/
+│   └── example_server/
+│       ├── app.py                  # Server identity, instructions, and transport
+│       ├── config.py               # Environment-based settings
+│       ├── models.py               # Tool input and response models
+│       ├── errors.py               # Inventory error types
+│       ├── warehouse.py            # Shared Databricks connection setup
+│       ├── inventory_layout.py     # Source columns and record adapters
+│       ├── project_reader.py       # Shared record preparation
+│       ├── legacy_project_adapter.py
+│       ├── complete_project_adapter.py  # Final inventory field and license mapping
+│       ├── warehouse_project_reader.py
+│       ├── project_search.py       # Filters, counts, and result pages
+│       ├── project_comparison.py   # Ordered comparison evidence
+│       ├── catalog_reader.py       # Inventory coverage counts
+│       ├── routes.py               # HTTP infrastructure routes
+│       ├── tools/
+│       │   ├── __init__.py         # Registration controlled by feature flags
+│       │   ├── catalog_tool.py
+│       │   ├── search_tool.py
+│       │   ├── project_tool.py
+│       │   └── compare_tool.py
+│       ├── prompts/               # Prompt registration hook
+│       └── resources/             # Resource registration hook
+├── tests/                         # Automated tests
+├── eval/
+│   ├── README.md                  # Methodology, results, and limitations
+│   ├── local_discovery.py         # Live functional workflow
+│   ├── results/                   # Saved evaluation reports
+│   └── databricks/                # Agent-evaluation scaffolding
+├── deploy/                        # Inherited deployment guides and scripts
+└── docs/                          # Partner reference materials
+```
+
+Selected files are shown; this is not an exhaustive directory listing.
+The Python package and console command retain their original names, `example_server` and `example-server`.
+
 ## Known limitations and follow-up
 
-- Finalize durable entry IDs and validate uniqueness across refreshes.
+- Recheck ID completeness and uniqueness after dataset refreshes, and verify that existing entries retain their assigned IDs.
 - Record dataset versions or immutable snapshots for repeatable evaluation.
 - Separate count and page queries can observe concurrent inventory changes.
 - Comparison reads entries separately and does not guarantee a shared snapshot.
