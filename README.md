@@ -1,189 +1,277 @@
-# GSA MCP Hackathon — Server Template
+# Federal Source Code Inventory MCP Server
 
-A ready-to-run starter for building a [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server in Python, plus deployment kits for **IBM Cloud (watsonx Orchestrate)** and **Databricks**.
+Discover federal software inventory entries through a Model Context Protocol (MCP) server backed by Databricks. Created to reuse source code across the federal government ecosystem.
 
-Built with [FastMCP](https://github.com/jlowin/fastmcp) and [uv](https://docs.astral.sh/uv/). If you have never built an MCP server before, start with **[QUICKSTART.md](QUICKSTART.md)**.
+The server helps an AI client search inventory metadata, retrieve individual entries, compare selected entries, and describe the configured inventory’s coverage. It returns structured evidence for further investigation rather than recommendations that software is ready or authorized for reuse.
 
----
+Built with [FastMCP](https://github.com/jlowin/fastmcp) and [uv](https://docs.astral.sh/uv/), using the GSA MCP hackathon server template.
 
-## What is an MCP server?
+## Inventory discovery tools
 
-An MCP server exposes **tools** (functions the model can call), **prompts** (reusable conversation starters), and **resources** (data the model can read) to an AI client such as Claude Desktop, Claude Code, or an agent platform like watsonx Orchestrate. You write the tools; the client's model decides when to call them.
+Each tool is enabled independently through configuration.
 
-This template gives you a working server with one example of each, so you can replace the examples with your own service and deploy.
+| Tool | Purpose |
+|---|---|
+| `govcode_catalog_info` | Report inventory entry counts grouped by agency and organization |
+| `govcode_search_projects` | Search names and descriptions, filter by agency or organization, and return a page with the total matching count |
+| `govcode_get_project` | Retrieve one inventory entry by `entry_id` |
+| `govcode_compare_projects` | Retrieve evidence for two to five distinct entry IDs, preserve requested order, and report missing IDs separately |
 
----
+Search uses case-insensitive literal substring matching in names and descriptions. Agency and organization filters use exact values.
+Search is not semantic ranking.
 
-## Repo structure
+Search defaults to 10 results per page, supports up to 100, and uses an offset for pagination. Results are ordered by name, then entry ID.
 
-```
-mcp-hackathon-template/
-├── README.md                  # This file
-├── QUICKSTART.md              # 5-minute clone → run → connect walkthrough
-├── main.py                    # Local entry point (uv run python main.py)
-├── pyproject.toml             # Package + dependencies (uv)
-├── requirements.txt           # Mirror of runtime deps (for buildpack hosts)
-├── Dockerfile                 # Container image (streamable-HTTP, port 8080)
-├── manifest.yaml              # cloud.gov (Cloud Foundry) deploy
-├── server.json                # MCP registry metadata
-├── .env.example               # Copy to .env for local dev
-├── .github/workflows/ci.yml   # Lint + test on push/PR
-├── docs/                      # Vendor-contributed reference materials
+## Repository structure
+
+```text
+gov-codejson-mcp/
+├── README.md
+├── QUICKSTART.md                   # Original template walkthrough
+├── pyproject.toml                  # Package, dependencies, and console command
+├── .env.example                    # Local configuration reference
+├── app.yaml                        # Databricks App configuration
 ├── src/
-│   └── example_server/        # ← rename to your service
-│       ├── app.py             # Thin entry point: builds FastMCP, picks transport
-│       ├── config.py          # Settings from env vars / .env
-│       ├── models.py          # Pydantic models & enums for tool params
-│       ├── utils.py           # Shared helpers (HTTP client, pagination)
-│       ├── routes.py          # HTTP-only routes (/health, /version)
-│       ├── tools/             # ONE FILE PER TOOL
-│       │   ├── __init__.py    #   register_tools(mcp) aggregator
-│       │   └── example_tool.py
-│       ├── prompts/
-│       │   ├── __init__.py    #   register_prompts(mcp) aggregator
-│       │   └── example.py
-│       └── resources/
-│           ├── __init__.py    #   register_resources(mcp) aggregator
-│           └── example.py
-├── tests/                     # Import + registration smoke tests
-├── eval/                      # Stub → build a Phoenix eval harness (see mcp-eval skill)
-└── deploy/
-    ├── README.md              # Which deployment kit to use
-    ├── ibm/                   # watsonx Orchestrate: 3 kits (see below)
-    └── databricks/            # Databricks Apps kit
+│   └── example_server/
+│       ├── app.py                  # Server identity, instructions, and transport
+│       ├── config.py               # Environment-based settings
+│       ├── models.py               # Tool input and response models
+│       ├── errors.py               # Inventory error types
+│       ├── warehouse.py            # Shared Databricks connection setup
+│       ├── inventory_layout.py     # Source columns and record adapters
+│       ├── project_reader.py       # Shared record preparation
+│       ├── legacy_project_adapter.py
+│       ├── warehouse_project_reader.py
+│       ├── project_search.py       # Filters, counts, and result pages
+│       ├── project_comparison.py   # Ordered comparison evidence
+│       ├── catalog_reader.py       # Inventory coverage counts
+│       ├── routes.py               # HTTP infrastructure routes
+│       ├── tools/
+│       │   ├── __init__.py         # Registration controlled by feature flags
+│       │   ├── catalog_tool.py
+│       │   ├── search_tool.py
+│       │   ├── project_tool.py
+│       │   └── compare_tool.py
+│       ├── prompts/               # Prompt registration hook
+│       └── resources/             # Resource registration hook
+├── tests/                         # Automated tests
+├── eval/
+│   ├── README.md                  # Methodology, results, and limitations
+│   ├── local_discovery.py         # Live functional workflow
+│   ├── results/                   # Saved evaluation reports
+│   └── databricks/                # Agent-evaluation scaffolding
+├── deploy/                        # Inherited deployment guides and scripts
+└── docs/                          # Partner reference materials
 ```
 
----
+Selected files are shown; this is not an exhaustive directory listing.
+The Python package and console command retain their original names, `example_server` and `example-server`.
 
-## Getting started
+### Example workflow
+
+In an MCP-capable client connected to this server, ask:
+
+1. “Which agencies are represented in this inventory?”
+2. “Find two VA entries whose name or description contains data.
+   Include names, entry IDs, repository links, and the total matching count.”
+3. “Compare those entries using their inventory records.
+   Identify missing information and what I should investigate before reuse.”
+4. “Show the next two matches using the same filters.”
+
+Custom MCP availability depends on the client and organization settings.
+Local interactive verification has used MCP Inspector and ChatGPT Desktop.
+
+## Data and interpretation
+
+The cleaned inventory is stored in
+`users.natalia_luzuriaga1.legacy_gov_code`.
+
+Local verification on November 19, 2026 reported 8,044 entries across 10 represented agencies. These counts describe the configured inventory at the time of testing, not comprehensive federal software coverage.
+
+The server supports two explicit dataset formats:
+
+- `mock`: the development table’s original column names and list encoding.
+- `legacy`: the cleaned inventory’s `entry_id`, flattened fields,
+  pipe-separated lists, and timestamp columns.
+
+### Entry identity
+
+Use `entry_id` values returned by the server for lookup and comparison. Source identifiers and repository URLs can be shared by different inventory entries and are not reliable unique lookup keys.
+
+The current generated entry IDs are provisional. Persistent assignment across dataset refreshes remains backend follow-up work. Duplicate matches produce a controlled lookup error rather than selecting an arbitrary record.
+
+### What the inventory does not establish
+
+- A repository link does not establish current accessibility, completeness, security, maintenance, or suitability.
+- A usage classification such as `governmentWideReuse` does not establish specific reuse rights.
+- A null license means the inventory did not supply license information; it does not prove that no license exists.
+- Listed “languages” can include operating systems, databases, and platforms.
+- Software modification dates are not dataset refresh dates.
+- Entries sharing a repository remain separate inventory records.
+
+Unavailable fields remain null. Project responses omit contact fields. Dataset version and refresh metadata were unavailable in the observed catalog responses.
+
+## Local setup
 
 ### Prerequisites
-- [uv](https://docs.astral.sh/uv/) — `pip install uv` or `brew install uv`
 
-### Install and run
+- Python 3.11 or newer
+- [uv](https://docs.astral.sh/uv/)
+- Access to the Databricks workspace, SQL warehouse, catalog, schema, and configured table
+- An MCP client that supports launching a local STDIO server
+
+### Install
+
+From the repository root:
 
 ```bash
 cp .env.example .env
-uv sync
-uv run python main.py
+uv sync --group dev
 ```
 
-The server starts in **stdio** mode — it talks JSON-RPC over stdin/stdout, which is how local clients (Claude Desktop, Claude Code) launch it. See [QUICKSTART.md](QUICKSTART.md) to connect a client.
+If `.env` already exists, edit it rather than overwriting it.
 
-### Verify
+### Configure
+
+The checked-in `.env.example` contains transport and inventory settings.
+Add the Databricks connection variables shown below to your local `.env`.
+Replace placeholders with your workspace hostname and warehouse HTTP path.
+
+Set the local warehouse connection and inventory settings in `.env`:
+
+```dotenv
+MCP_TRANSPORT=stdio
+
+DATABRICKS_READER_AUTH_MODE=local
+DATABRICKS_SERVER_HOSTNAME=<workspace-hostname-without-https>
+DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/<warehouse-id>
+
+GOVCODE_PROJECT_DATASET_FORMAT=legacy
+GOVCODE_PROJECT_CATALOG=users
+GOVCODE_PROJECT_SCHEMA=natalia_luzuriaga1
+GOVCODE_PROJECT_TABLE=[project]
+
+GOVCODE_PROJECT_LOOKUP_ENABLED=true
+GOVCODE_PROJECT_SEARCH_ENABLED=true
+GOVCODE_CATALOG_INFO_ENABLED=true
+GOVCODE_PROJECT_COMPARE_ENABLED=true
+```
+
+Local mode uses Databricks OAuth. Complete authentication when prompted and ensure your user has access to the warehouse and table.
+
+All four inventory feature flags default to false. A complete catalog, schema, and table configuration is required when any inventory tool is enabled.
+
+Keep credentials out of committed files, screenshots, and shared logs.
+Local-user access does not establish that the deployed App’s service principal has equivalent permissions.
+
+### Start the server
 
 ```bash
-uv sync --group dev
-uv run pytest tests/ -v      # tests
-uv run ruff check .          # lint
+uv run --no-sync example-server
 ```
 
----
+The Python package remains `example_server`, and the console command remains
+`example-server`.
 
-## The one-tool-per-file pattern
+STDIO mode communicates through standard input and output. Starting it in a terminal does not open a chat interface or website; an MCP client normally launches the process.
 
-Each tool lives in its own file under `src/example_server/tools/` and exposes a `register(mcp)` function. `tools/__init__.py` calls each one from a single `register_tools(mcp)`. This keeps the tool list scannable and lets you add or remove an integration by touching two files.
+### Connect a local client
 
-**Step 1 — create `src/example_server/tools/my_tool.py`:**
+Configure a custom STDIO MCP connection with:
 
-```python
-from typing import Annotated
-from urllib.parse import quote
-from fastmcp import FastMCP
+- Command: the absolute path returned by `command -v uv`
+- Arguments: `run`, `--no-sync`, `example-server`
+- Working directory: the absolute path to this repository
 
-from example_server.utils import fetch_json
+If the client provides one field per argument, enter each argument separately.
+Restart or reconnect the server after changing configuration or code.
 
+## Verification and evaluation
 
-def register(mcp: FastMCP) -> None:
-    @mcp.tool(
-        name="example_get_thing",
-        annotations={
-            "title": "Get a thing",
-            "readOnlyHint": True,
-            "destructiveHint": False,
-            "idempotentHint": True,
-            "openWorldHint": True,
-        },
-    )
-    async def get_thing(thing_id: Annotated[str, "The ID to fetch."]) -> dict:
-        """One-line summary. Document the data source, its update cadence,
-        and the return shape here — the model reads this docstring."""
-        safe_id = quote(thing_id, safe="")
-        return await fetch_json(f"things/{safe_id}")
+Run the automated checks:
+
+```bash
+uv run --no-sync pytest tests/ -q
+uv run --no-sync ruff check .
+git --no-pager diff --check
 ```
 
-**Step 2 — wire it up in `tools/__init__.py`:**
+The latest reported development suite passed 141 tests.
 
-```python
-from example_server.tools import example_tool, my_tool
+Run the live functional workflow:
 
-def register_tools(mcp) -> None:
-    example_tool.register(mcp)
-    my_tool.register(mcp)  # ← add this line
+```bash
+uv run --no-sync python eval/local_discovery.py
 ```
 
-**Step 3 — add any API key** as a typed field in `config.py` and document the env var in `.env.example`.
+This runner requires live warehouse access and writes timestamped reports under `eval/results/`. Inspect the runner and saved report for the dataset, cases, code revision, and execution mode used.
 
-Prompts (`prompts/`) and resources (`resources/`) follow the exact same `register(mcp)` + aggregator pattern.
+Evaluation evidence includes:
 
----
+- Automated tests for record adaptation, filters, pagination, configuration,
+  registration, and controlled failures
+- Scripted local MCP checks against a live warehouse
+- Interactive MCP Inspector checks
+- A guided manual chat evaluation using the actual inventory
 
-## Rename the package
+Functional assertions, manual model evaluation, and deployed App verification
+are separate forms of evidence. Passing one does not establish the others.
 
-Before publishing your server, rename `example_server` to your service (e.g. `census_mcp`):
+See [eval/README.md](eval/README.md) for methodology, recorded results,
+security review notes, and limitations.
 
-1. Rename the folder `src/example_server/` → `src/<your_name>/`.
-2. Update `pyproject.toml`: the `[project].name`, `[project.scripts]`, and `[tool.hatch.build.targets.wheel].packages`.
-3. Find-and-replace `example_server` across `src/`, `tests/`, `main.py`, `Dockerfile`, and `manifest.yaml`.
+## Deployment status
 
----
+Local MCP workflows have been verified with local-user warehouse authentication.
 
-## Tool design tips (federal data)
+A Databricks App deployment built and started, but external access returned an unauthorized PrivateLink access error. End-to-end deployed App operation and service-principal access to the actual inventory remain unverified.
 
-- **Return structured data, not prose.** Return dicts/lists with consistent keys and let the model narrate.
-- **Document freshness.** Federal datasets lag; state the update frequency and "as-of" date in the docstring.
-- **Expose pagination.** Use `PaginationParams` / `paginate()` from `utils.py`, and return `has_more` / `next_offset`.
-- **Use explicit timeouts.** `utils.fetch_json` defaults to 30s.
-- **Actionable errors.** Return an error dict with a `hint`, not a raw stack trace.
-- **Constrain outbound requests.** Keep API origins in operator-controlled code or configuration, pass only validated relative paths to `fetch_json`, and encode path segments. Never pass a tool-supplied URL directly to an HTTP client.
-- **Treat redirects and DNS as security boundaries.** Redirects are disabled by default. A server that must fetch caller-supplied URLs needs connection-time IP validation on every hop plus network egress controls; a one-time DNS check is not sufficient.
-- **Keep sensitive data out of errors and logs.** Do not expose or log upstream bodies, headers, full URLs, query strings, credentials, stack traces, SSNs, dates of birth, or addresses.
+Deploy reviewed changes from `main`. Confirm the deployed revision, inventory layout, tool flags, and service-principal permissions before using the App for a demonstration.
 
----
+The repository retains deployment guides inherited from the template:
 
-## Deploying
+- [Deployment overview](deploy/README.md)
+- [Databricks Apps](deploy/databricks/)
+- [IBM watsonx Orchestrate](deploy/ibm/)
 
-Local development uses stdio. To share your server with an agent platform, deploy it and register it. See **[deploy/README.md](deploy/README.md)** for a chooser, then:
+The IBM deployment paths have not been verified for this project.
 
-- **IBM watsonx Orchestrate** — [deploy/ibm/](deploy/ibm/) (three kits: local stdio toolkit, Code Engine build-from-Git, and prebuilt image).
-- **Databricks Apps** — [deploy/databricks/](deploy/databricks/).
+## Repository structure
 
-Both read the same server code; `app.py` automatically serves HTTP when the platform injects a port.
+- `src/example_server/app.py`: server identity, instructions, and transport
+- `src/example_server/config.py`: environment-based settings
+- `src/example_server/models.py`: validated tool parameters and responses
+- `src/example_server/warehouse.py`: shared Databricks connection setup
+- `src/example_server/inventory_layout.py`: mock and legacy schema selection
+- `src/example_server/legacy_project_adapter.py`: cleaned inventory adaptation
+- `src/example_server/project_search.py`: search filters, counts, and pages
+- `src/example_server/warehouse_project_reader.py`: single-entry lookup
+- `src/example_server/project_comparison.py`: ordered comparison evidence
+- `src/example_server/catalog_reader.py`: inventory coverage counts
+- `src/example_server/tools/`: MCP tool registration
+- `tests/`: automated tests
+- `eval/`: functional evaluation, reports, and Databricks agent-evaluation scaffolding
+- `deploy/`: inherited deployment guides and scripts
 
----
+## Known limitations and follow-up
+
+- Finalize durable entry IDs and validate uniqueness across refreshes.
+- Record dataset versions or immutable snapshots for repeatable evaluation.
+- Separate count and page queries can observe concurrent inventory changes.
+- Comparison reads entries separately and does not guarantee a shared snapshot.
+- Broaden manual evaluation beyond one guided conversation and a narrow set of examples.
+- Resolve deployed App access and verify its warehouse permissions.
+- Filter-aware facets and inventory summaries beyond catalog counts remain unimplemented.
 
 ## Partner reference materials
 
-The [`docs/`](docs/) directory contains educational reference materials that
-IBM and Databricks may contribute for hackathon participants. Vendor-contributed
-materials do not represent the views, positions, or policies of GSA or the
-United States Government.
+The [`docs/`](docs/) directory contains educational reference materials that IBM and Databricks may contribute for hackathon participants. Vendor-contributed materials do not represent the views, positions, or policies of GSA or the United States Government.
 
-GSA does not endorse any commercial product, service, or enterprise referenced
-in these materials. Reference to a commercial product, service, or enterprise
-does not constitute or imply endorsement, recommendation, or favoring by GSA or
-the United States Government. These materials are provided for educational
-purposes only. See [`docs/README.md`](docs/README.md) for the complete notice and
-contribution guidance.
-
----
-
-## Evaluations
-
-Measuring how well an LLM can use your tools is the real test of server quality. This template intentionally does **not** ship an eval harness — see [eval/README.md](eval/README.md) for how to build one with the `mcp-eval` skill.
-
----
+GSA does not endorse any commercial product, service, or enterprise referenced in these materials. Reference to a commercial product, service, or enterprise does not constitute or imply endorsement, recommendation, or favoring by GSA or
+the United States Government. These materials are provided for educational purposes only. See [`docs/README.md`](docs/README.md) for the complete notice and contribution guidance.
 
 ## License
 
-[MIT](LICENSE). See [SECURITY.md](SECURITY.md) for the vulnerability disclosure policy and hackathon security notes.
+[MIT](LICENSE) applies to this repository’s code. It does not establish licensing or reuse rights for software described in the inventory.
+
+See [SECURITY.md](SECURITY.md) for vulnerability disclosure guidance and hackathon security notes.
