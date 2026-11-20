@@ -1,4 +1,4 @@
-"""Evaluate discovery through local MCP using the live legacy inventory."""
+"""Evaluate discovery through local MCP using the final inventory table."""
 
 import asyncio
 import json
@@ -58,8 +58,8 @@ async def main(report: dict) -> None:
         govcode_project_compare_enabled=True,
         govcode_project_catalog="users",
         govcode_project_schema="natalia_luzuriaga1",
-        govcode_project_table="legacy_gov_code",
-        govcode_project_dataset_format="legacy",
+        govcode_project_table="gov_code_complete",
+        govcode_project_dataset_format="complete",
     )
     server = FastMCP("Local discovery evaluation")
     register_tools(server, config=config)
@@ -83,10 +83,23 @@ async def main(report: dict) -> None:
             catalog = CatalogInfoResponse.model_validate(
                 result.structured_content
             )
-            assert catalog.total_count > 0, "Expected a populated legacy inventory"
+            assert catalog.total_count > 0, "Expected a populated final inventory"
             assert catalog.total_count == sum(
                 group.project_count for group in catalog.groups
             )
+
+            report["observed_inventory"] = {
+                "total_count": catalog.total_count,
+                "group_count": len(catalog.groups),
+                "agency_count": len(
+                    {
+                        group.agency
+                        for group in catalog.groups
+                        if group.agency is not None
+                    }
+                ),
+            }
+
             print("Catalog response consistency: PASS")
             print("Inventory entries:", catalog.total_count)
 
@@ -114,10 +127,17 @@ async def main(report: dict) -> None:
             assert result.structured_content is not None
             detail = ProjectDetail.model_validate(result.structured_content)
 
-            assert detail.entry_id == selected.entry_id
-            assert detail.name == selected.name
-            assert detail.agency == selected.agency
-            assert detail.repositoryURL == selected.repositoryURL
+            assert detail.model_dump() == selected.model_dump(), (
+                f"Lookup differs from search for {selected.entry_id}"
+            )
+            report["observed_search"] = {
+                "query": search.applied_filters.query,
+                "agency": search.applied_filters.agency,
+                "total_count": search.total_count,
+                "returned_entry_ids": [
+                    project.entry_id for project in search.results
+                ],
+            }
             assert not any(
                 key.startswith("contact") for key in result.structured_content
             )
@@ -224,8 +244,9 @@ def run_with_report() -> None:
         "evaluation_type": "functional_workflow",
         "execution_mode": "local_in_process_mcp",
         "warehouse_identity": "local_user",
-        "dataset": "users.natalia_luzuriaga1.legacy_gov_code",
-        "dataset_format": "legacy",
+        "dataset": "users.natalia_luzuriaga1.gov_code_complete",
+        "dataset_format": "complete",
+        "source_id_column": "govcode_id",
         "dataset_snapshot": None,
         "started_at": started_at.isoformat(),
         "git_commit": subprocess.check_output(
