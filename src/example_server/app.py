@@ -29,7 +29,7 @@ from example_server.tools import register_tools
 
 # MCP clients display this name and receive these server instructions.
 mcp = FastMCP(
-    name="Government Software Inventory",
+    name="Federal Source Code Inventory",
     instructions=(
         "Discover federal software inventory entries using the enabled tools. "
         "Use catalog information to describe the configured inventory's coverage. "

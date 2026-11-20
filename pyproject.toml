@@ -1,7 +1,7 @@
 [project]
 name = "example-server"
 version = "0.1.0"
-description = "Starter MCP server for the GSA MCP hackathon"
+description = "Read-only discovery and comparison of federal source code inventory metadata"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -26,9 +26,7 @@ build-backend = "hatchling.build"
 packages = ["src/example_server"]
 
 [dependency-groups]
-# Dev + eval-only deps. Install with `uv sync --group dev`.
-# The Phoenix evaluation harness (see eval/) is not scaffolded in this template
-# on purpose — add these when you build it per the mcp-eval skill.
+# Local development and automated test dependencies.
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
