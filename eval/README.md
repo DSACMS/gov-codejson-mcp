@@ -260,3 +260,41 @@ This review does not constitute a repository-wide security audit.
 The Databricks agent-evaluation scaffolding remains under `eval/databricks/`.
 It requires separate configuration and generated agent files. It has not
 produced the results reported here.
+
+
+## Final refresh and dependency update verification
+
+On November 20, 2026, all seven functional cases passed against the
+completed refresh of `users.natalia_luzuriaga1.gov_code_complete`,
+using local-user authentication and the upgraded dependencies.
+
+Observed coverage:
+- 9,399 inventory entries
+- 11 represented agencies
+- 67 agency and organization groups
+
+The VA search for “data” returned 10 matches. Its first page returned
+`2026-VA-000001` and `2026-VA-000011`. Lookup and comparison agreed
+with the search records, and comparison preserved requested order
+and reported the intentionally missing ID separately.
+
+Report: [Final refresh verification](results/20261120T182632549755Z-discovery.json)
+
+Code revision: `2bd79c4eea63039a9e7e0a9b8082571180c8e45d`.
+The tracked worktree was clean when the run started.
+Total elapsed time was 85.820 seconds for this single workflow run.
+
+The earlier 9,430-entry evaluation predates the completed refresh.
+Entry IDs changed during dataset finalization; earlier reports and
+manual sessions remain historical evidence.
+
+Following the dependency update:
+- 153 automated tests passed.
+- Package compatibility, Ruff, and whitespace checks passed.
+- pip-audit reported no known vulnerabilities in the exported pinned
+  runtime requirements.
+- Docker installation was changed to use uv.lock. A container build
+  was not tested locally because Docker was unavailable.
+
+The functional run did not evaluate an LLM or the deployed App.
+No immutable dataset snapshot identifier was captured.
