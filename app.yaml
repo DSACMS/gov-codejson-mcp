@@ -25,6 +25,18 @@ env:
   - name: GOVCODE_PROJECT_LOOKUP_ENABLED
     value: "true"
 
+  - name: GOVCODE_PROJECT_SEARCH_ENABLED
+    value: "true"
+
+  - name: GOVCODE_CATALOG_INFO_ENABLED
+    value: "true"
+
+  - name: GOVCODE_PROJECT_COMPARE_ENABLED
+    value: "true"
+
+  - name: GOVCODE_PROJECT_DATASET_FORMAT
+    value: "complete"
+
   - name: GOVCODE_PROJECT_CATALOG
     value: "users"
 
@@ -32,4 +44,4 @@ env:
     value: "natalia_luzuriaga1"
 
   - name: GOVCODE_PROJECT_TABLE
-    value: "mock_dataset"
+    value: "gov_code_complete"
