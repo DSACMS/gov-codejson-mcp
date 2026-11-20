@@ -21,9 +21,11 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Install dependencies first for better layer caching.
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
-RUN uv pip install --system --no-cache .
+RUN uv sync --locked --no-dev --no-editable
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8080
 
