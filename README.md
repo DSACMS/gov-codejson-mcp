@@ -41,10 +41,13 @@ Local interactive verification has used MCP Inspector and ChatGPT Desktop.
 The configured inventory is stored in
 `users.natalia_luzuriaga1.gov_code_complete`.
 
-The latest recorded functional verification, completed November 19, 2026
-(Mountain Time), observed 9,430 inventory entries across 11 agencies and
-67 agency and organization groups. Counts describe that evaluated table
-at that time, not comprehensive federal source code coverage.
+The latest recorded functional verification, completed November 20, 2026,
+observed 9,399 inventory entries across 11 agencies and 67 agency and
+organization groups in `users.natalia_luzuriaga1.gov_code_complete`.
+
+All seven functional checks passed using local-user warehouse authentication
+and the upgraded dependencies. These counts describe the evaluated inventory,
+not comprehensive federal source code coverage.
 
 The server maps the source `govcode_id` column to the public `entry_id`
 field. The team confirmed that these IDs persist across dataset refreshes.
@@ -66,7 +69,13 @@ Use `GOVCODE_PROJECT_DATASET_FORMAT=complete` with the current inventory.
 
 Use `entry_id` values returned by the server for lookup and comparison. Source identifiers and repository URLs can be shared by different inventory entries and are not reliable unique lookup keys.
 
-The source `govcode_id` uniquely identifies an inventory entry and remains stable across dataset refreshes, as confirmed by the team. The server exposes it through the public `entry_id` field. Duplicate matches produce a controlled lookup error rather than selecting an arbitrary record.
+The source `govcode_id` uniquely identifies an inventory entry. The team confirmed that the final IDs persist across future dataset refreshes. The server exposes them through the public `entry_id` field. Duplicate matches produce a controlled lookup error rather than selecting an arbitrary record.
+
+The completed dataset refresh introduced the final, zero-padded IDs.
+Use IDs exactly as returned by the tools, including leading zeros.
+
+Examples include `2026-VA-000001` and `2026-VA-000011`.
+Earlier evaluation reports retain the identifiers observed before finalization.
 
 ### What the inventory does not establish
 
@@ -164,7 +173,7 @@ uv run --no-sync ruff check .
 git --no-pager diff --check
 ```
 
-The latest reported development suite passed 141 tests.
+The latest reported development suite passed 153 tests.
 
 Run the live functional workflow:
 
@@ -182,11 +191,9 @@ Evaluation evidence includes:
 - Interactive MCP Inspector checks
 - A guided manual chat evaluation using the actual inventory
 
-Functional assertions, manual model evaluation, and deployed App verification
-are separate forms of evidence. Passing one does not establish the others.
+Functional assertions, manual model evaluation, and deployed App verification are separate forms of evidence. Passing one does not establish the others.
 
-See [eval/README.md](eval/README.md) for methodology, recorded results,
-security review notes, and limitations.
+See [eval/README.md](eval/README.md) for methodology, recorded results, security review notes, and limitations.
 
 ## Deployment status
 
@@ -205,21 +212,6 @@ The repository retains deployment guides inherited from the template:
 The IBM deployment paths have not been verified for this project.
 
 ## Repository structure
-
-- `src/example_server/app.py`: server identity, instructions, and transport
-- `src/example_server/config.py`: environment-based settings
-- `src/example_server/models.py`: validated tool parameters and responses
-- `src/example_server/warehouse.py`: shared Databricks connection setup
-- `src/example_server/inventory_layout.py`: mock and legacy schema selection
-- `src/example_server/legacy_project_adapter.py`: cleaned inventory adaptation
-- `src/example_server/project_search.py`: search filters, counts, and pages
-- `src/example_server/warehouse_project_reader.py`: single-entry lookup
-- `src/example_server/project_comparison.py`: ordered comparison evidence
-- `src/example_server/catalog_reader.py`: inventory coverage counts
-- `src/example_server/tools/`: MCP tool registration
-- `tests/`: automated tests
-- `eval/`: functional evaluation, reports, and Databricks agent-evaluation scaffolding
-- `deploy/`: inherited deployment guides and scripts
 
 ```text
 gov-codejson-mcp/
