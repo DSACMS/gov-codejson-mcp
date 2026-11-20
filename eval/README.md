@@ -23,7 +23,7 @@ MCP server. It does not modify `.env` or the deployed App configuration.
 
 The current evaluation targets:
 
-`users.natalia_luzuriaga1.mock_dataset`
+`users.natalia_luzuriaga1.gov_code_complete`
 
 Run with ordinary Python settings; the evaluation uses assertions and must
 not be run with assertion checks disabled.
@@ -133,3 +133,30 @@ The tracked worktree was clean when the run started.
 This was one functional run, not a performance benchmark or an LLM
 evaluation. Deployed App access was not tested. No immutable dataset
 snapshot was recorded.
+
+## Final inventory functional verification
+
+On November 19, 2026 (Mountain Time; November 20 UTC), all seven
+functional cases passed against
+`users.natalia_luzuriaga1.gov_code_complete`.
+
+The run used the `complete` layout, mapping source `govcode_id` values
+to the public `entry_id` field, with local-user warehouse authentication.
+
+Observed coverage:
+- 9,430 inventory entries
+- 11 represented agencies
+- 67 agency and organization groups
+
+The VA search for “data” returned 10 matches. Search, lookup, and
+comparison agreed on the selected records. Comparison preserved requested
+order and reported the intentionally missing ID separately.
+
+Report: [Final inventory functional run](results/20261120T001022398682Z-discovery.json)
+
+Code revision: `a387e69b6861cda3a79d687b4a4afe526e36a244`.
+The tracked worktree was clean at the start of the run.
+Total elapsed time was 70.749 seconds.
+
+This was one local functional run. It did not evaluate an LLM or the
+deployed App, and no immutable dataset snapshot was recorded.
