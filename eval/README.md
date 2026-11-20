@@ -90,6 +90,22 @@ guarantees. Warehouse-backed timings include connection and query work;
 search-to-detail includes multiple tool calls. Overall time also includes
 setup and teardown.
 
+## Security considerations
+
+### Databricks scanner findings
+
+Reviewed three `hardcoded-secret-assignment` warnings for
+`SECRET_SCOPE`, `SECRET_KEY_CLIENT_ID`, and `SECRET_KEY_CLIENT_SECRET`
+in `eval/databricks/agent_eval_offline.py`.
+
+The flagged strings are a secret scope name and lookup key names,
+not credentials. Actual credentials are retrieved at runtime through
+Databricks secrets or environment variables.
+
+These specific assignments were assessed as false positives.
+The findings have not yet been dismissed in Databricks.
+This review does not constitute a repository-wide security audit.
+
 ## Limitations and follow-up
 
 - No immutable dataset snapshot was captured. Results may change as the
