@@ -86,9 +86,7 @@ async def test_invalid_project_returns_controlled_error():
         )
 
     assert result.is_error
-    messages = "\n".join(
-        block.text for block in result.content if block.type == "text"
-    )
+    messages = "\n".join(block.text for block in result.content if block.type == "text")
     assert "Project lookup failed. Please try again later." in messages
     assert "fictional-secret" not in messages
     assert "internal-detail" not in messages

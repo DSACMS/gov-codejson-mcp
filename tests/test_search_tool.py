@@ -65,9 +65,7 @@ async def test_search_returns_page_and_forwards_filters():
 
 @pytest.mark.asyncio
 async def test_search_returns_controlled_failure():
-    searcher = MagicMock(
-        side_effect=RuntimeError("internal-detail=fictional-secret")
-    )
+    searcher = MagicMock(side_effect=RuntimeError("internal-detail=fictional-secret"))
     server = FastMCP("test")
     search_tool.register(server, project_searcher=searcher)
 
@@ -79,9 +77,7 @@ async def test_search_returns_controlled_failure():
         )
 
     assert result.is_error
-    messages = "\n".join(
-        block.text for block in result.content if block.type == "text"
-    )
+    messages = "\n".join(block.text for block in result.content if block.type == "text")
     assert "Project search failed. Please try again later." in messages
     assert "fictional-secret" not in messages
 

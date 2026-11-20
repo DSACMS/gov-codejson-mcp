@@ -43,6 +43,5 @@ def register(
             return catalog_loader()
         except Exception:
             raise ToolError(
-                "Catalog information could not be retrieved. "
-                "Please try again later."
+                "Catalog information could not be retrieved. Please try again later."
             ) from None

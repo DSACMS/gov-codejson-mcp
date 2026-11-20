@@ -14,12 +14,12 @@ from tests.test_project_reader import FIXTURE_PATH
 async def test_get_project_returns_converted_fields():
     server = FastMCP("test")
     project_tool.register(
-    server,
-    project_loader=partial(
-        get_project_from_fixture,
-        fixture_path=FIXTURE_PATH,
-    ),
-)
+        server,
+        project_loader=partial(
+            get_project_from_fixture,
+            fixture_path=FIXTURE_PATH,
+        ),
+    )
 
     async with Client(server) as client:
         result = await client.call_tool(
@@ -34,8 +34,7 @@ async def test_get_project_returns_converted_fields():
     assert result.structured_content["laborHours"] == 0
     assert result.structured_content["dateCreated"] == "2024-03-01"
     assert (
-        result.structured_content["dateMetadataLastUpdated"]
-        == "2025-06-15T14:30:00Z"
+        result.structured_content["dateMetadataLastUpdated"] == "2025-06-15T14:30:00Z"
     )
 
 
@@ -67,12 +66,12 @@ async def test_get_project_preserves_nulls():
 async def test_get_project_unknown_id_returns_error():
     server = FastMCP("test")
     project_tool.register(
-    server,
-    project_loader=partial(
-        get_project_from_fixture,
-        fixture_path=FIXTURE_PATH,
-    ),
-)
+        server,
+        project_loader=partial(
+            get_project_from_fixture,
+            fixture_path=FIXTURE_PATH,
+        ),
+    )
 
     async with Client(server) as client:
         with pytest.raises(ToolError, match="Project entry not found"):

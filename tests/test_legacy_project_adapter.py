@@ -17,9 +17,7 @@ def test_maps_legacy_fields_without_exposing_contacts():
         "languages": "Python|Shell",
         "tags": " energy | research ",
         "laborHours": 1.5,
-        "date_created": datetime(
-            2024, 4, 2, 13, 30, tzinfo=timezone.utc
-        ),
+        "date_created": datetime(2024, 4, 2, 13, 30, tzinfo=timezone.utc),
         "contact_email": "contact@example.org",
         "contact_name": "Example Contact",
     }

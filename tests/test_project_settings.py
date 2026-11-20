@@ -102,6 +102,7 @@ def test_comparison_alone_requires_table_settings():
             govcode_project_table="",
         )
 
+
 def test_legacy_dataset_format_loads_from_environment(monkeypatch):
     monkeypatch.setenv("GOVCODE_PROJECT_DATASET_FORMAT", "legacy")
 

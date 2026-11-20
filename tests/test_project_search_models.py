@@ -62,4 +62,3 @@ def test_search_response_rejects_out_of_range_limits(limit):
             limit=limit,
             has_more=False,
         )
-

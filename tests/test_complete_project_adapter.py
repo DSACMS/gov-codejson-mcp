@@ -50,9 +50,7 @@ def test_maps_complete_fields_without_exposing_contacts():
     assert project.dateMetadataLastUpdated == timestamp.isoformat()
 
     data = project.model_dump()
-    assert not any(
-        key.startswith(("contact", "partners")) for key in data
-    )
+    assert not any(key.startswith(("contact", "partners")) for key in data)
     assert "contact@example.org" not in project.model_dump_json()
     assert "partner@example.org" not in project.model_dump_json()
 

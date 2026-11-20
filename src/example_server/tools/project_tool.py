@@ -42,9 +42,7 @@ def register(
                 "the inventory needs correction."
             ) from None
         except Exception:
-            raise ToolError(
-                "Project lookup failed. Please try again later."
-            ) from None
+            raise ToolError("Project lookup failed. Please try again later.") from None
 
         if project is None:
             raise ToolError("Project entry not found")

@@ -33,6 +33,7 @@ async def test_invalid_limit_does_not_connect(monkeypatch):
 
     connect_mock.assert_not_called()
 
+
 @pytest.mark.asyncio
 async def test_preview_returns_project_rows(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SERVER_HOSTNAME", "example.invalid")
@@ -78,6 +79,7 @@ async def test_preview_returns_project_rows(monkeypatch):
     executed_sql = cursor_mock.execute.call_args.args[0]
     assert executed_sql.split()[-2:] == ["LIMIT", "2"]
 
+
 @pytest.mark.asyncio
 async def test_preview_returns_empty_rows(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SERVER_HOSTNAME", "example.invalid")
@@ -114,6 +116,7 @@ async def test_preview_returns_empty_rows(monkeypatch):
     cursor_mock.execute.assert_called_once()
     executed_sql = cursor_mock.execute.call_args.args[0]
     assert executed_sql.split()[-2:] == ["LIMIT", "2"]
+
 
 @pytest.mark.asyncio
 async def test_preview_selects_hhs(monkeypatch):
@@ -158,6 +161,7 @@ async def test_preview_selects_hhs(monkeypatch):
     assert "raw.`GSA`" not in executed_sql
     assert executed_sql.split()[-2:] == ["LIMIT", "2"]
 
+
 @pytest.mark.asyncio
 async def test_invalid_agency_does_not_connect(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SERVER_HOSTNAME", "example.invalid")
@@ -183,6 +187,7 @@ async def test_invalid_agency_does_not_connect(monkeypatch):
             )
 
     connect_mock.assert_not_called()
+
 
 @pytest.mark.asyncio
 async def test_preview_selects_ssa_without_languages(monkeypatch):
@@ -226,6 +231,7 @@ async def test_preview_selects_ssa_without_languages(monkeypatch):
     assert "NULL AS languages" in executed_sql
     assert "projects.project.languages" not in executed_sql
     assert executed_sql.split()[-2:] == ["LIMIT", "2"]
+
 
 @pytest.mark.asyncio
 async def test_app_mode_uses_credentials_provider(monkeypatch):
@@ -283,6 +289,7 @@ async def test_app_mode_uses_credentials_provider(monkeypatch):
     assert "raw.`GSA`" not in executed_sql
     assert executed_sql.split()[-2:] == ["LIMIT", "2"]
 
+
 @pytest.mark.asyncio
 async def test_invalid_auth_mode_does_not_connect(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SERVER_HOSTNAME", "example.invalid")
@@ -300,8 +307,7 @@ async def test_invalid_auth_mode_does_not_connect(monkeypatch):
 
     async with Client(server) as client:
         with pytest.raises(
-            ToolError,
-            match="DATABRICKS_READER_AUTH_MODE must be local or app"
+            ToolError, match="DATABRICKS_READER_AUTH_MODE must be local or app"
         ):
             await client.call_tool(
                 "databricks_preview_table",
@@ -309,6 +315,7 @@ async def test_invalid_auth_mode_does_not_connect(monkeypatch):
             )
 
     connect_mock.assert_not_called()
+
 
 def test_app_credentials_provider_uses_runtime_settings(monkeypatch):
     monkeypatch.setenv("DATABRICKS_SERVER_HOSTNAME", "example.invalid")
@@ -321,9 +328,9 @@ def test_app_credentials_provider_uses_runtime_settings(monkeypatch):
 
     monkeypatch.setattr(warehouse, "Config", config_factory)
     monkeypatch.setattr(
-    warehouse,
-    "oauth_service_principal",
-    oauth_factory,
+        warehouse,
+        "oauth_service_principal",
+        oauth_factory,
     )
 
     provider = warehouse.app_credentials_provider()

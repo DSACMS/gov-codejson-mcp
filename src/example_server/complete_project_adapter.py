@@ -30,10 +30,7 @@ def _parse_complete_licenses(
         if len(names) != len(urls):
             raise ValueError("License names and URLs have different lengths")
 
-    return [
-        {"name": name, "url": url}
-        for name, url in zip(names, urls, strict=True)
-    ]
+    return [{"name": name, "url": url} for name, url in zip(names, urls, strict=True)]
 
 
 def prepare_complete_project(

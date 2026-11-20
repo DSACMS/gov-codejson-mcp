@@ -1,4 +1,5 @@
 """Read project entries from a local development fixture."""
+
 import json
 from datetime import date, datetime
 from pathlib import Path
@@ -13,11 +14,7 @@ def parse_list_field(
     if value is None or not value.strip():
         return None
 
-    return [
-        item.strip()
-        for item in value.split(separator)
-        if item.strip()
-    ]
+    return [item.strip() for item in value.split(separator) if item.strip()]
 
 
 def parse_license_field(
@@ -39,11 +36,7 @@ def get_project_from_fixture(
     with fixture_path.open(encoding="utf-8") as fixture_file:
         projects = json.load(fixture_file)
 
-    matches = [
-        project
-        for project in projects
-        if project["entry_id"] == entry_id
-    ]
+    matches = [project for project in projects if project["entry_id"] == entry_id]
 
     if len(matches) > 1:
         raise ValueError(f"Duplicate entry_id in fixture: {entry_id}")

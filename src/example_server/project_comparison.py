@@ -16,8 +16,7 @@ def compare_projects(
         raise InvalidComparisonRequest("Comparison requires between 2 and 5 entry IDs")
 
     if any(
-        not isinstance(entry_id, str) or not entry_id.strip()
-        for entry_id in entry_ids
+        not isinstance(entry_id, str) or not entry_id.strip() for entry_id in entry_ids
     ):
         raise InvalidComparisonRequest("Entry IDs must be nonblank strings")
 
