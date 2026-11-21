@@ -113,3 +113,24 @@ The server exposes these values through the existing `entry_id` response field.
 Complete tool traces and exact per-call arguments are not included in this
 record. Model/effort settings and the exact loaded server revision were not
 confirmed for this session.
+
+## November 20 final-inventory local-client check
+
+- Client: ChatGPT Desktop
+- Model and effort: GPT-6 Luna / Medium
+- Dataset: `users.natalia_luzuriaga1.gov_code_complete`
+- Transport: local STDIO
+- Warehouse authentication: local-user OAuth
+- Deployed App: not verified; authenticated requests to `/mcp` returned HTTP 403 with `Unauthorized private link access to workspace: 7474654188777746`.
+
+| Check | Observed outcome |
+|---|---|
+| Catalog coverage | A fresh `govcode_catalog_info` response reported 9,399 entries. The distinct non-null agency values were DHS, DOD, DOE, EPA, FEC, GSA, HHS, NSF, SSA, USDA, and VA (11 agencies). |
+| First VA search page | Search for “data” with agency `VA`, limit 2, offset 0 returned Administrative Data Repository (`2026-VA-000001`) and Clinical Data Repository/Health Data Repository (`2026-VA-000011`), with repository links and 10 total matches. |
+| Next VA search page | The next page returned Collaborative Terminology Tooling Data Management (`2026-VA-000123`) and Community Care - Electronic Data Interchange Gateway (`2026-VA-000147`). The total remained 10 and `has_more` was true. |
+| Comparison | `govcode_compare_projects` returned `2026-VA-000001` followed by `2026-VA-000011`, preserving the requested order, with `missing_entry_ids: []`. |
+| Missing ID | The same assistant for `govcode_get_project` returned “Project entry not found” for `__govcode_missing_entry_839271__`; no substitute entry was reported. |
+
+Screenshots captured the catalog, search pages, comparison, and not-found response. These checks were conducted in one guided conversation with shared context, so they are not independent trials. Tool responses were visible for the catalog, searches, comparison, and missing-ID lookup.
+
+The App was deployed and running, but its MCP endpoint was not verified. An authenticated request returned HTTP 403 with a PrivateLink access error before MCP initialization.
