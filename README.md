@@ -1,6 +1,6 @@
 # Federal Source Code Inventory MCP Server
 
-Discover federal software inventory entries through a Model Context Protocol (MCP) server backed by Databricks. Created to reuse source code across the federal government ecosystem.
+Discover federal software inventory entries through a Model Context Protocol (MCP) server backed by Databricks. Created to support discovery and potential reuse of federal source code.
 
 The server helps an AI client search inventory metadata, retrieve individual entries, compare selected entries, and describe the configured inventory’s coverage. It returns structured evidence for further investigation rather than recommendations that software is ready or authorized for reuse.
 
@@ -38,19 +38,13 @@ Local interactive verification has used MCP Inspector and ChatGPT Desktop.
 
 ## Data and interpretation
 
-The configured inventory is stored in
-`users.natalia_luzuriaga1.gov_code_complete`.
+The configured inventory is stored in `users.natalia_luzuriaga1.gov_code_complete`.
 
-The latest recorded functional verification, completed November 20, 2026,
-observed 9,399 inventory entries across 11 agencies and 67 agency and
-organization groups in `users.natalia_luzuriaga1.gov_code_complete`.
+The latest recorded functional verification, completed November 20, 2026, observed 9,399 inventory entries across 11 agencies and 67 agency and organization groups in `users.natalia_luzuriaga1.gov_code_complete`.
 
-All seven functional checks passed using local-user warehouse authentication
-and the upgraded dependencies. These counts describe the evaluated inventory,
-not comprehensive federal source code coverage.
+All seven functional checks passed using local-user warehouse authentication and the upgraded dependencies. These counts describe the evaluated inventory, not comprehensive federal source code coverage.
 
-The server maps the source `govcode_id` column to the public `entry_id`
-field. The team confirmed that these IDs persist across dataset refreshes.
+The server maps the source `govcode_id` column to the public `entry_id` field. The team confirmed that these IDs persist across dataset refreshes.
 
 The server supports three explicit dataset formats:
 
@@ -64,6 +58,14 @@ The server supports three explicit dataset formats:
   column and semicolon-separated lists. Retained for development and tests.
 
 Use `GOVCODE_PROJECT_DATASET_FORMAT=complete` with the current inventory.
+
+### Dataset and publication
+
+This server reads the finalized inventory in `users.natalia_luzuriaga1.gov_code_complete`. The related [govcode-index project](https://github.com/GSA-SHARE-IT/govcode-index) documents the collection and preparation of federal agency `code.json` inventory data and assigns persistent `govcode_id` values. This server exposes each source ID as `entry_id`. See the govcode-index README for details about the dataset’s sources and preparation.
+
+Publication on Data.gov is pending.
+
+**Data.gov listing:** [Add listing URL after publication]
 
 ### Entry identity
 
@@ -259,11 +261,10 @@ The Python package and console command retain their original names, `example_ser
 
 ## Known limitations and follow-up
 
-- Recheck ID completeness and uniqueness after dataset refreshes, and verify that existing entries retain their assigned IDs.
 - Record dataset versions or immutable snapshots for repeatable evaluation.
 - Separate count and page queries can observe concurrent inventory changes.
 - Comparison reads entries separately and does not guarantee a shared snapshot.
-- Broaden manual evaluation beyond one guided conversation and a narrow set of examples.
+- Broaden manual evaluation with independent sessions and more varied use cases; current evidence covers two guided conversations and a narrow set of examples.
 - Resolve deployed App access and verify its warehouse permissions.
 - Filter-aware facets and inventory summaries beyond catalog counts remain unimplemented.
 
